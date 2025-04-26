@@ -60,13 +60,30 @@ def harness(file_path: str):
 
             InputType.model_validate(input_data) # Don't catch errors, let them bubble up
 
-            def create_test_function(input_vals, InputModel, original_func):
+            def create_test_function(input_vals, InputModel, OutputModel, original_func, test_name_str, module_file_path):
                 def test_func():
                     test_input = InputModel(**input_vals)
-                    original_func(test_input)
+                    actual_output_raw = original_func(test_input)
+
+                    # Validate the actual output against the OutputType model
+                    validated_output = OutputModel.model_validate(actual_output_raw)
+
+                    # Define and create the blessed directory
+                    output_dir = module_file_path.parent / "blessed"
+                    output_dir.mkdir(parents=True, exist_ok=True)
+
+                    # Define the output file path
+                    output_file_path = output_dir / f"{test_name_str}.json"
+
+                    # Serialize the validated output to JSON
+                    json_output = validated_output.model_dump_json(indent=2)
+
+                    # Write the JSON output to the file
+                    output_file_path.write_text(json_output)
+
                 return test_func
 
-            test_func = create_test_function(input_data, InputType, func)
+            test_func = create_test_function(input_data, InputType, OutputType, func, test_name, absolute_file_path)
             setattr(module, test_name, test_func) # Add test to the module's namespace
 
         return func
