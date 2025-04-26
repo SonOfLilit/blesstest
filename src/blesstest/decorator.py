@@ -1,7 +1,17 @@
 import sys
 import inspect
+import json
+import pathlib
+import pydantic
+from typing import Any, Dict
 
-def harness(test_cases):
+class TestCaseInfo(pydantic.BaseModel):
+    params: Dict[str, Any]
+
+class TestCasesFile(pydantic.RootModel):
+    root: Dict[str, TestCaseInfo]
+
+def harness(file_path: str):
     def decorator(func):
         # Get the module object where the decorated function is defined
         module_name = func.__module__
@@ -23,23 +33,41 @@ def harness(test_cases):
         if OutputType is inspect.Parameter.empty:
              raise TypeError(f"Decorated function {func.__name__} must have a return type annotation.")
 
-        # Generate tests dynamically in the module's global scope
-        for case in test_cases:
-            input_data = {k: v for k, v in case.items() if k != 'expected' and k != 'name'}
-            expected_output_data = case['expected']
-            test_name = f"test_{func.__name__}_{case.get('name', '_'.join(map(str, input_data.values())))}"
+        # Determine the absolute path to the JSON file
+        if module.__file__ is None:
+            raise RuntimeError(f"Could not determine the file path for module {module_name}.")
+        module_path = pathlib.Path(module.__file__).parent
+        absolute_file_path = module_path / file_path
 
-            def create_test_function(input_vals, expected_vals, InputModel, OutputModel, original_func):
+        # Load and validate the JSON test cases file
+        try:
+            with open(absolute_file_path, 'r') as f:
+                json_data = json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Test cases file not found: {absolute_file_path}")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Error decoding JSON from {absolute_file_path}: {e}")
+
+        try:
+            validated_data = TestCasesFile.model_validate(json_data)
+        except pydantic.ValidationError as e:
+            raise ValueError(f"Invalid format in test cases file {absolute_file_path}: {e}")
+
+        # Generate tests dynamically in the module's global scope
+        for test_name_from_json, test_case_info in validated_data.root.items():
+            input_data = test_case_info.params
+            test_name = f"test_{func.__name__}_{test_name_from_json}"
+
+            InputType.model_validate(input_data) # Don't catch errors, let them bubble up
+
+            def create_test_function(input_vals, InputModel, original_func):
                 def test_func():
                     test_input = InputModel(**input_vals)
-                    expected_output = OutputModel(**expected_vals)
-                    actual_output = original_func(test_input)
-                    assert actual_output == expected_output
+                    original_func(test_input)
                 return test_func
 
-            test_func = create_test_function(input_data, expected_output_data, InputType, OutputType, func)
+            test_func = create_test_function(input_data, InputType, func)
             setattr(module, test_name, test_func) # Add test to the module's namespace
 
-        # Return the original function unmodified
         return func
     return decorator 

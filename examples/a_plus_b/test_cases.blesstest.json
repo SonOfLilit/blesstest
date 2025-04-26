@@ -1,0 +1,14 @@
+{
+  "happy_path": {
+    "params": {
+      "a": 1,
+      "b": 2
+    }
+  },
+  "negatives": {
+    "params": {
+      "a": -1,
+      "b": -2
+    }
+  }
+}
