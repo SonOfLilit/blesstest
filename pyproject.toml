@@ -1,0 +1,17 @@
+[project]
+name = "blesstest"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Yonatan Cale", email = "myselfandfredy@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+testing-framework = "testing_framework:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
