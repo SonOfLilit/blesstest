@@ -3,7 +3,60 @@ import inspect
 import json
 import pathlib
 import pydantic
-from typing import Any, Dict
+import subprocess
+import enum
+from typing import Any, Dict, Tuple
+
+class GitStatus(enum.Enum):
+    MATCH = 1
+    CHANGED = 2
+    NEEDS_STAGING = 3
+
+def _check_blessed_file_status(output_file_path: pathlib.Path) -> GitStatus:
+    """Checks the Git status of the blessed file using porcelain format.
+
+    Uses `git status --porcelain -- <file>` to check the status against the index.
+    Does not catch subprocess errors (FileNotFoundError, CalledProcessError).
+
+    Returns:
+        The GitStatus enum.
+
+    Raises:
+        FileNotFoundError: If 'git' command is not found.
+        subprocess.CalledProcessError: If git status command fails.
+        ValueError: If the git status output is unexpected.
+    """
+    relative_path = str(output_file_path.relative_to(pathlib.Path.cwd()))
+
+    # Check the status using porcelain format for the specific file
+    command = ["git", "status", "--porcelain", "--", relative_path]
+    # Run the command, letting exceptions (FileNotFoundError, CalledProcessError) bubble up
+    result = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        check=True, # Will raise CalledProcessError on non-zero exit
+        encoding='utf-8'
+    )
+
+    output = result.stdout.strip()
+
+    if not output:
+        # Empty output means file is tracked and matches the index
+        return GitStatus.MATCH
+    elif output.startswith('A '):
+        # Added to index, and working tree matches index. This is fine.
+        return GitStatus.MATCH
+    elif output.startswith('??'):
+        # File is untracked
+        return GitStatus.NEEDS_STAGING
+    elif len(output) >= 2 and output[1] == 'M':
+        # Second character is 'M' (e.g., ' M', 'MM', 'AM') -> Modified in working tree
+        return GitStatus.CHANGED
+    else:
+        # Any other output is unexpected for a single file check after writing it
+        raise ValueError(f"Unexpected git status output for {relative_path}: '{output}'")
+
 
 class TestCaseInfo(pydantic.BaseModel):
     params: Dict[str, Any]
@@ -64,26 +117,32 @@ def harness(file_path: str):
                 def test_func():
                     test_input = InputModel(**input_vals)
                     actual_output_raw = original_func(test_input)
-
-                    # Validate the actual output against the OutputType model
                     validated_output = OutputModel.model_validate(actual_output_raw)
-
-                    # Define and create the blessed directory
                     output_dir = module_file_path.parent / "blessed"
                     output_dir.mkdir(parents=True, exist_ok=True)
-
-                    # Define the output file path
                     output_file_path = output_dir / f"{test_name_str}.json"
+                    json_output = validated_output.model_dump_json(indent=2) + '\n'
 
-                    # Serialize the validated output to JSON
-                    json_output = validated_output.model_dump_json(indent=2)
-
-                    # Write the JSON output to the file
+                    # Write the current output FIRST
                     output_file_path.write_text(json_output)
+
+                    # Check Git status AFTER writing
+                    # Exceptions (FileNotFoundError, CalledProcessError, ValueError) will bubble up
+                    status = _check_blessed_file_status(output_file_path)
+
+                    # Get relative path for messages
+                    relative_path_for_msg = str(output_file_path.relative_to(pathlib.Path.cwd()))
+
+                    # Assert based on status
+                    if status == GitStatus.NEEDS_STAGING:
+                        raise AssertionError(f"New blessed file created at {relative_path_for_msg}. Please stage it.")
+                    elif status == GitStatus.CHANGED:
+                        raise AssertionError(f"Blessed file changed at {relative_path_for_msg}. Please stage the changes.")
+                    # If status == GitStatus.MATCH, the test passes this check implicitly
 
                 return test_func
 
-            test_func = create_test_function(input_data, InputType, OutputType, func, test_name, absolute_file_path)
+            test_func = create_test_function(input_data, InputType, OutputType, func, test_name, module_path) # Use module_path
             setattr(module, test_name, test_func) # Add test to the module's namespace
 
         return func
