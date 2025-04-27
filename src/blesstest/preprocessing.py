@@ -38,7 +38,7 @@ def preprocess_test_cases(
         output_case_info = copy.deepcopy(base_case_info)
         output_case_info["params"] = output_params
 
-        validated_case_info = {}
+        validated_case_info: CaseInfo = {}
         processed_cases[case_name] = output_case_info
 
         processing_stack.remove(case_name)
