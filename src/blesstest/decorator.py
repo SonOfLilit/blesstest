@@ -5,12 +5,14 @@ import pathlib
 import pydantic
 import subprocess
 import enum
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
+
 
 class GitStatus(enum.Enum):
     MATCH = 1
     CHANGED = 2
     NEEDS_STAGING = 3
+
 
 def _check_blessed_file_status(output_file_path: pathlib.Path) -> GitStatus:
     """Checks the Git status of the blessed file using porcelain format.
@@ -35,66 +37,80 @@ def _check_blessed_file_status(output_file_path: pathlib.Path) -> GitStatus:
         command,
         capture_output=True,
         text=True,
-        check=True, # Will raise CalledProcessError on non-zero exit
-        encoding='utf-8'
+        check=True,  # Will raise CalledProcessError on non-zero exit
+        encoding="utf-8",
     )
 
-    output = result.stdout.strip()
+    output = result.stdout
 
     if not output:
         # Empty output means file is tracked and matches the index
         return GitStatus.MATCH
-    elif output.startswith('A '):
+    elif output.startswith("A "):
         # Added to index, and working tree matches index. This is fine.
         return GitStatus.MATCH
-    elif output.startswith('??'):
+    elif output.startswith("??"):
         # File is untracked
         return GitStatus.NEEDS_STAGING
-    elif len(output) >= 2 and output[1] == 'M':
+    elif len(output) >= 2 and output[1] == "M":
         # Second character is 'M' (e.g., ' M', 'MM', 'AM') -> Modified in working tree
         return GitStatus.CHANGED
     else:
         # Any other output is unexpected for a single file check after writing it
-        raise ValueError(f"Unexpected git status output for {relative_path}: '{output}'")
+        raise ValueError(
+            f"Unexpected git status output for {relative_path}: '{output}'"
+        )
 
 
 class TestCaseInfo(pydantic.BaseModel):
     params: Dict[str, Any]
 
+
 class TestCasesFile(pydantic.RootModel):
     root: Dict[str, TestCaseInfo]
+
 
 def harness(file_path: str):
     def decorator(func):
         # Get the module object where the decorated function is defined
         module_name = func.__module__
         if module_name not in sys.modules:
-            raise RuntimeError(f"Module '{module_name}' not found in sys.modules. This might happen if the test file is not imported correctly.")
+            raise RuntimeError(
+                f"Module '{module_name}' not found in sys.modules. This might happen if the test file is not imported correctly."
+            )
         module = sys.modules[module_name]
 
         # Get the input and output type hints from the decorated function
         sig = inspect.signature(func)
         params = list(sig.parameters.values())
         if not params:
-             raise TypeError(f"Decorated function {func.__name__} must accept at least one argument (the input model).")
+            raise TypeError(
+                f"Decorated function {func.__name__} must accept at least one argument (the input model)."
+            )
         input_param = params[0]
         InputType = input_param.annotation
         OutputType = sig.return_annotation
 
         if InputType is inspect.Parameter.empty:
-             raise TypeError(f"Decorated function {func.__name__} must have a type annotation for its input parameter.")
+            raise TypeError(
+                f"Decorated function {func.__name__} must have a type annotation for its input parameter."
+            )
         if OutputType is inspect.Parameter.empty:
-             raise TypeError(f"Decorated function {func.__name__} must have a return type annotation.")
+            raise TypeError(
+                f"Decorated function {func.__name__} must have a return type annotation."
+            )
 
         # Determine the absolute path to the JSON file
         if module.__file__ is None:
-            raise RuntimeError(f"Could not determine the file path for module {module_name}.")
+            raise RuntimeError(
+                f"Could not determine the file path for module {module_name}."
+            )
         module_path = pathlib.Path(module.__file__)
         absolute_file_path = module_path.parent / file_path
 
         # Load and validate the JSON test cases file
         try:
-            with open(absolute_file_path, 'r') as f:
+            with open(absolute_file_path, "r") as f:
                 json_data = json.load(f)
         except FileNotFoundError:
             raise FileNotFoundError(f"Test cases file not found: {absolute_file_path}")
@@ -104,16 +120,27 @@ def harness(file_path: str):
         try:
             validated_data = TestCasesFile.model_validate(json_data)
         except pydantic.ValidationError as e:
-            raise ValueError(f"Invalid format in test cases file {absolute_file_path}: {e}")
+            raise ValueError(
+                f"Invalid format in test cases file {absolute_file_path}: {e}"
+            )
 
         # Generate tests dynamically in the module's global scope
         for test_name_from_json, test_case_info in validated_data.root.items():
             input_data = test_case_info.params
             test_name = f"test_{func.__name__}_{test_name_from_json}"
 
-            InputType.model_validate(input_data) # Don't catch errors, let them bubble up
+            InputType.model_validate(
+                input_data
+            )  # Don't catch errors, let them bubble up
 
-            def create_test_function(input_vals, InputModel, OutputModel, original_func, test_name_str, module_file_path):
+            def create_test_function(
+                input_vals,
+                InputModel,
+                OutputModel,
+                original_func,
+                test_name_str,
+                module_file_path,
+            ):
                 def test_func():
                     # breakpoint()
                     test_input = InputModel(**input_vals)
@@ -122,7 +149,7 @@ def harness(file_path: str):
                     output_dir = module_file_path.parent / "blessed"
                     output_dir.mkdir(parents=True, exist_ok=True)
                     output_file_path = output_dir / f"{test_name_str}.json"
-                    json_output = validated_output.model_dump_json(indent=2) + '\n'
+                    json_output = validated_output.model_dump_json(indent=2) + "\n"
 
                     # Write the current output FIRST
                     output_file_path.write_text(json_output)
@@ -132,7 +159,9 @@ def harness(file_path: str):
                     status = _check_blessed_file_status(output_file_path)
 
                     # Get relative path for messages
-                    relative_path_for_msg = str(output_file_path.relative_to(pathlib.Path.cwd()))
+                    relative_path_for_msg = str(
+                        output_file_path.relative_to(pathlib.Path.cwd())
+                    )
 
                     # Assert based on status
                     if status == GitStatus.NEEDS_STAGING:
@@ -147,8 +176,11 @@ def harness(file_path: str):
 
                 return test_func
 
-            test_func = create_test_function(input_data, InputType, OutputType, func, test_name, module_path) # Use module_path
-            setattr(module, test_name, test_func) # Add test to the module's namespace
+            test_func = create_test_function(
+                input_data, InputType, OutputType, func, test_name, module_path
+            )  # Use module_path
+            setattr(module, test_name, test_func)  # Add test to the module's namespace
 
         return func
-    return decorator 
+
+    return decorator
