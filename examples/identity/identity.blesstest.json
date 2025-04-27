@@ -11,5 +11,23 @@
     "params": {
       "b": 2000000000
     }
+  },
+  "b_variations": {
+    "harness": "identity",
+    "params": {
+      "a": 1
+    },
+    "variations": [
+      {
+        "params": {
+          "b": 2
+        }
+      },
+      {
+        "params": {
+          "b": 2000000000
+        }
+      }
+    ]
   }
 }
