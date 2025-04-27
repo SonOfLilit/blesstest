@@ -89,8 +89,8 @@ def harness(file_path: str):
         # Determine the absolute path to the JSON file
         if module.__file__ is None:
             raise RuntimeError(f"Could not determine the file path for module {module_name}.")
-        module_path = pathlib.Path(module.__file__).parent
-        absolute_file_path = module_path / file_path
+        module_path = pathlib.Path(module.__file__)
+        absolute_file_path = module_path.parent / file_path
 
         # Load and validate the JSON test cases file
         try:
@@ -115,6 +115,7 @@ def harness(file_path: str):
 
             def create_test_function(input_vals, InputModel, OutputModel, original_func, test_name_str, module_file_path):
                 def test_func():
+                    # breakpoint()
                     test_input = InputModel(**input_vals)
                     actual_output_raw = original_func(test_input)
                     validated_output = OutputModel.model_validate(actual_output_raw)
