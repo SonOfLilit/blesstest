@@ -43,18 +43,23 @@ def _check_blessed_file_status(output_file_path: pathlib.Path) -> GitStatus:
 
     output = result.stdout
 
-    if not output:
-        # Empty output means file is tracked and matches the index
-        return GitStatus.MATCH
-    elif output.startswith("A "):
+    # The first column is the staging area, the second is the working tree.
+    # M = Modified
+    # A = Added
+    # ? = Untracked
+
+    if output.startswith("A "):
         # Added to index, and working tree matches index. This is fine.
         return GitStatus.MATCH
-    elif output.startswith("??"):
+    elif not output or output[1] == " ":
+        # Empty output means file is tracked and matches the index
+        # empty second column means working tree matches index
+        return GitStatus.MATCH
+    elif output[1] == "M":
+        return GitStatus.CHANGED
+    elif output[1] == "?":
         # File is untracked
         return GitStatus.NEEDS_STAGING
-    elif len(output) >= 2 and output[1] == "M":
-        # Second character is 'M' (e.g., ' M', 'MM', 'AM') -> Modified in working tree
-        return GitStatus.CHANGED
     else:
         # Any other output is unexpected for a single file check after writing it
         raise ValueError(
