@@ -136,9 +136,13 @@ def harness(file_path: str):
 
                     # Assert based on status
                     if status == GitStatus.NEEDS_STAGING:
-                        raise AssertionError(f"New blessed file created at {relative_path_for_msg}. Please stage it.")
+                        error = f"{relative_path_for_msg}: New blessed file created. Stage it if you bless it."
+                        print(error)
+                        raise AssertionError(error)
                     elif status == GitStatus.CHANGED:
-                        raise AssertionError(f"Blessed file changed at {relative_path_for_msg}. Please stage the changes.")
+                        error = f"{relative_path_for_msg}: Changes found, stage them if you bless them."
+                        print(error)
+                        raise AssertionError(error)
                     # If status == GitStatus.MATCH, the test passes this check implicitly
 
                 return test_func
