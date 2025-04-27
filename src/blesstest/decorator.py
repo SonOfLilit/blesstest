@@ -7,6 +7,8 @@ import subprocess
 import enum
 from typing import Any, Dict
 
+from .preprocessing import preprocess_test_cases
+
 
 class GitStatus(enum.Enum):
     MATCH = 1
@@ -122,12 +124,8 @@ def harness(file_path: str):
         except json.JSONDecodeError as e:
             raise ValueError(f"Error decoding JSON from {absolute_file_path}: {e}")
 
-        try:
-            validated_data = TestCasesFile.model_validate(json_data)
-        except pydantic.ValidationError as e:
-            raise ValueError(
-                f"Invalid format in test cases file {absolute_file_path}: {e}"
-            )
+        processed_test_cases = preprocess_test_cases(json_data)
+        validated_data = TestCasesFile.model_validate(processed_test_cases)
 
         # Generate tests dynamically in the module's global scope
         for test_name_from_json, test_case_info in validated_data.root.items():

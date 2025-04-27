@@ -4,5 +4,11 @@
       "a": 1,
       "b": 2
     }
+  },
+  "happy_path_with_big_b": {
+    "base": "happy_path",
+    "params": {
+      "b": 2000000000
+    }
   }
 }
