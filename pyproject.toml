@@ -18,3 +18,8 @@ testing-framework = "testing_framework:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest-watcher>=0.4.3",
+]
