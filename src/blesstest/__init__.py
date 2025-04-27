@@ -1,13 +1,11 @@
 from __future__ import annotations
 import json
 import pathlib
-from typing import Any
 
-import pydantic
 import pytest
 
 from blesstest.git_utils import GitStatus, check_blessed_file_status
-from blesstest.preprocessing import preprocess_test_cases
+from blesstest.preprocessing import preprocess_test_cases, PreprocessedTestCasesFile
 
 from .decorator import harness, all_harnesses
 
@@ -20,13 +18,13 @@ def pytest_collect_file(parent, file_path: pathlib.PosixPath):
         return BlessTestFile.from_parent(parent, path=file_path)
 
 
-class TestCaseInfo(pydantic.BaseModel):
-    harness: str
-    params: dict[str, Any]
+# class TestCaseInfo(pydantic.BaseModel):
+#     harness: str
+#     params: dict[str, Any]
 
 
-class TestCasesFile(pydantic.RootModel):
-    root: dict[str, TestCaseInfo]
+# class TestCasesFile(pydantic.RootModel):
+#     root: dict[str, TestCaseInfo]
 
 
 class BlessTestFile(pytest.File):
@@ -35,7 +33,7 @@ class BlessTestFile(pytest.File):
 
         processed_test_cases = preprocess_test_cases(raw)
         print(f"processed_test_cases: {processed_test_cases}")
-        validated_data = TestCasesFile.model_validate(processed_test_cases)
+        validated_data = PreprocessedTestCasesFile.model_validate(processed_test_cases)
         print(f"BlessTestFile collect validated_data: {validated_data}")
         test_file_name = self.path.name.removesuffix(".blesstest.json")
 
