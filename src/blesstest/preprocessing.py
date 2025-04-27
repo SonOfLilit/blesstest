@@ -23,27 +23,25 @@ def preprocess_test_cases(
             )
 
         current_case_info = raw_test_cases[case_name]
+        processed_case_info: CaseInfo
         if "base" not in current_case_info:
-            return current_case_info
+            processed_case_info = current_case_info
+        else:
+            processing_stack.add(case_name)
 
-        processing_stack.add(case_name)
+            base_name = current_case_info["base"]
+            base_case_info = process_case(base_name)
+            base_params = base_case_info.get("params", {})
+            current_params = current_case_info.get("params", {})
+            output_params = copy.deepcopy(base_params)
+            output_params.update(current_params)
 
-        base_name = current_case_info["base"]
-        base_case_info = process_case(base_name)
-        base_params = base_case_info.get("params", {})
-        current_params = current_case_info.get("params", {})
-        output_params = copy.deepcopy(base_params)
-        output_params.update(current_params)
+            processed_case_info = copy.deepcopy(base_case_info)
+            processed_case_info["params"] = output_params
+            processing_stack.remove(case_name)
 
-        output_case_info = copy.deepcopy(base_case_info)
-        output_case_info["params"] = output_params
-
-        validated_case_info: CaseInfo = {}
-        processed_cases[case_name] = output_case_info
-
-        processing_stack.remove(case_name)
-        print(f"Case name: {case_name}, Case info: {output_case_info}")
-        return validated_case_info
+        processed_cases[case_name] = processed_case_info
+        return processed_case_info
 
     for name in raw_test_cases:
         process_case(name)

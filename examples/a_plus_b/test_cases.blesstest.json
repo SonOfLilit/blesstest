@@ -1,11 +1,13 @@
 {
   "happy_path": {
+    "harness": "my_harness",
     "params": {
       "a": 1,
       "b": 2
     }
   },
   "negatives": {
+    "harness": "my_harness",
     "params": {
       "a": -1,
       "b": -2

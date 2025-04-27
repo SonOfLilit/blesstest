@@ -1,5 +1,6 @@
 {
   "happy_path": {
+    "harness": "identity",
     "params": {
       "a": 1,
       "b": 2

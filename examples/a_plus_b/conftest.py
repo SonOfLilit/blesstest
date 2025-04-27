@@ -1,4 +1,4 @@
-from blesstest import harness
+from blesstest import harness, pytest_collect_file  # noqa
 import pydantic
 
 
@@ -16,6 +16,6 @@ class HarnessOutput(pydantic.BaseModel):
     result: int
 
 
-@harness(file_path="test_cases.blesstest.json")
+@harness
 def my_harness(test_input: HarnessInput) -> HarnessOutput:
     return HarnessOutput(result=add(test_input.a, test_input.b))
