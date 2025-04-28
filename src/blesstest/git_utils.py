@@ -43,7 +43,6 @@ def check_blessed_file_status(output_file_path: pathlib.Path) -> GitStatus:
     # A = Added
     # ? = Untracked
 
-    print(f"output: {output}")
     if not output:
         # No changes
         return GitStatus.MATCH

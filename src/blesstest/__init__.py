@@ -13,7 +13,6 @@ __all__ = ["harness", "pytest_collect_file"]
 
 
 def pytest_collect_file(parent, file_path: pathlib.PosixPath):
-    print(f"pytest_collect_file: {file_path}")
     if file_path.name.endswith(".blesstest.json"):
         return BlessTestFile.from_parent(parent, path=file_path)
 
@@ -39,7 +38,6 @@ class BlessTestFile(pytest.File):
 
         for test_name_from_json, test_case_info in validated_data.root.items():
             test_name = f"{test_file_name}_{test_name_from_json}"
-            print(test_name)
             yield BlessTestItem.from_parent(
                 self, name=test_name, path=self.path, test_case_info=test_case_info
             )
