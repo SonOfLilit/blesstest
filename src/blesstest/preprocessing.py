@@ -120,23 +120,25 @@ def resolve_variations(
         for i, variation_data in enumerate(variations_list):
             variation_params = variation_data.params
             param_str_parts = [f"{k}_{v}" for k, v in sorted(variation_params.items())]
-            param_str = "_".join(param_str_parts)
-            if len(param_str) > 50:
-                param_str = param_str[:50] + "..."  # Indicate truncation
+            param_str = "__".join(param_str_parts)
 
-            variation_json = json.dumps(
-                variation_data.model_dump(mode="json"), sort_keys=True
-            )
-            variation_hash = (
-                base64.b64encode(hashlib.sha256(variation_json.encode()).digest())
-                .rstrip(b"=")
-                .decode("ascii")
-            )  # Use standard b64 encoding, remove padding
-            # Shorten hash if needed, ensure fixed length for predictability
-            hash_len = 3
-            variation_hash_short = variation_hash[:hash_len]
+            MAX_PARAM_STR_LEN = 32
 
-            new_case_name = f"{case_name}__{param_str}__{variation_hash_short}"
+            if len(param_str) <= MAX_PARAM_STR_LEN:
+                new_case_name = f"{case_name}__{param_str}"
+            else:
+                variation_json = json.dumps(
+                    variation_data.model_dump(mode="json"), sort_keys=True
+                )
+                variation_hash = (
+                    base64.b64encode(hashlib.sha256(variation_json.encode()).digest())
+                    .rstrip(b"=")
+                    .decode("ascii")
+                )
+                hash_len = 3
+                variation_hash_short = variation_hash[:hash_len]
+                new_case_name = f"{case_name}__{param_str[:MAX_PARAM_STR_LEN]}__{variation_hash_short}"
+
             if new_case_name in resolved_base_cases or new_case_name in expanded_cases:
                 raise ValueError(
                     f"Generated variation case name '{new_case_name}' conflicts with an existing case name. "
