@@ -50,7 +50,15 @@
             "name": "a_is_3", // Optionally, variations can have a name
             "params": {
               "a": 3
-            }
+            },
+            "variations": [
+              {
+                "params": {
+                  "b": 200
+                }
+              },
+              {}
+            ]
           },
           {}
         ]
