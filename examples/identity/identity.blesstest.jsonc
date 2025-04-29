@@ -47,7 +47,7 @@
         },
         "variations": [
           {
-            "name": "a_is_3", // Optionally
+            "name": "a_is_3", // Optionally, variations can have a name
             "params": {
               "a": 3
             }
