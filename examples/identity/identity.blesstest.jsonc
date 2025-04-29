@@ -95,5 +95,43 @@
     "params": {
       "b": 2
     }
+  },
+  "abstract_with_variations": {
+    "abstract": true,
+    "variations": [
+      {
+        "params": {
+          "a": 1
+        }
+      },
+      {
+        "params": {
+          "a": 2
+        }
+      }
+    ]
+  },
+  "child_of_abstract_with_variations": {
+    "base": "abstract_with_variations",
+    "harness": "identity",
+    "params": {
+      "b": 2
+    }
+  },
+  "cartesian_product": {
+    "harness": "identity",
+    "base": "abstract_with_variations",
+    "variations": [
+      {
+        "params": {
+          "b": 2
+        }
+      },
+      {
+        "params": {
+          "b": 3
+        }
+      }
+    ]
   }
 }

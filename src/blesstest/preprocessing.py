@@ -64,7 +64,9 @@ def resolve_bases(
                 processing_stack.remove(case_name)  # Ensure removal even on error
 
             processed_case_info = _merge_base_and_variation(
-                base_case_info, current_case_info
+                base_case_info,
+                current_case_info,
+                preserve_abstract=False,
             )
 
         processed_cases[case_name] = processed_case_info
@@ -76,18 +78,52 @@ def resolve_bases(
     return processed_cases
 
 
+def _expand_variations(
+    original_variations: List[CaseInfo] | None,
+    variations_to_add: List[CaseInfo] | None,
+) -> List[CaseInfo] | None:
+    if not original_variations:
+        return variations_to_add
+    if not variations_to_add:
+        return original_variations
+
+    edited_variations: List[CaseInfo] = []
+    for original_variation in original_variations:
+        some_edited_sub_variations = _expand_variations(
+            variations_to_add=variations_to_add,
+            original_variations=original_variation.variations,
+        )
+        edited_variation = original_variation.copy(
+            update={"variations": some_edited_sub_variations}
+        )
+        if some_edited_sub_variations:
+            edited_variations.append(edited_variation)
+
+    if len(edited_variations) == 0:
+        return None
+    else:
+        return edited_variations
+
+
 def _merge_base_and_variation(
     base_case: CaseInfo,
     variant_case: CaseInfo,
+    preserve_abstract: bool,
 ) -> CaseInfo:
+    variant_case_variations = _expand_variations(
+        original_variations=variant_case.variations,
+        variations_to_add=base_case.variations,
+    )
+
     return CaseInfo(
+        abstract=variant_case.abstract or (preserve_abstract and base_case.abstract),
         name=variant_case.name,
         params={
             **base_case.params,
             **variant_case.params,
         },
         harness=variant_case.harness or base_case.harness,
-        variations=variant_case.variations,
+        variations=variant_case_variations,
     )
 
 
@@ -169,8 +205,14 @@ def resolve_variations(
                     f"Could not generate unique name for variation of '{current_case_name}'. Base name: {new_case_name}"
                 )
 
+            current_case_without_variations = current_case_info.model_copy(
+                update={"variations": None}
+            )
+
             merged_case_info = _merge_base_and_variation(
-                current_case_info, variation_item
+                base_case=current_case_without_variations,
+                variant_case=variation_item,
+                preserve_abstract=True,
             )
 
             _expand_recursive(
