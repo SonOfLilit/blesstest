@@ -14,6 +14,8 @@ __all__ = ["harness", "pytest_collect_file"]
 
 def pytest_collect_file(parent, file_path: pathlib.PosixPath):
     name = file_path.name
+    if file_path.suffix == ".json" and file_path.parent.name == "blessed":
+        file_path.unlink()
     if name.endswith(".blesstest.json") or name.endswith(".blesstest.jsonc"):
         return BlessTestFile.from_parent(parent, path=file_path)
 
