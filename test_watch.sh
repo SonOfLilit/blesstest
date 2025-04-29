@@ -1,3 +1,3 @@
 #!/bin/sh
 
-uv run ptw . --now --patterns '*.py,*.blesstest.json'
+uv run ptw . --now --patterns '*.py,*.blesstest.json,*.blesstest.jsonc'

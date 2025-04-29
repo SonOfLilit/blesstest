@@ -5,7 +5,7 @@
 ## Core Concepts
 
 1. **Harness Function:** A Python function decorated with `@blesstest.harness`. This function takes a Pydantic model instance as input (which defines the scenario to be tested) and returns a Pydantic model instance as output (which defines the assertions to be made). Aim for a single harness that captures most/all complexity in your project with a minimal interface.
-2. **Test Definition Files (`.blesstest.json`):** JSON files that define individual test cases or variations. Each top-level key in the JSON represents a test case.
+2. **Test Definition Files (`.blesstest.jsonc` or `blesstest.json`):** JSON files that define individual test cases or variations. Each top-level key in the JSON represents a test case.
 
 ## How to Use
 
@@ -47,7 +47,7 @@
    ```
 
 4. **Enable Pytest Collection:**
-   Also in your root `conftest.py`, import `pytest_collect_file` from `blesstest` to allow `pytest` to find your `.blesstest.json` files.
+   Also in your root `conftest.py`, import `pytest_collect_file` from `blesstest` to allow `pytest` to find your `.blesstest.jsonc` files.
 
    ```python
    # Example: conftest.py (add this line)
@@ -56,10 +56,10 @@
    # ... (rest of conftest.py including harness definition)
    ```
 
-5. **Create Test Definition File (`.blesstest.json`):**
-   Create a JSON file (e.g., `tests/test_addition.blesstest.json`) defining your test cases.
+5. **Create Test Definition File (`.blesstest.jsonc`):**
+   Create a JSON file (e.g., `tests/test_addition.blesstest.jsonc`) defining your test cases.
 
-   ```json
+   ```jsonc
    {
      "add_simple": {
        "harness": "addition_harness",
@@ -82,9 +82,23 @@
        }
      },
      "with_variations": {
+       // This will run 2 tests: [a=10, b=1] and [a=10, b=2]
        "harness": "addition_harness",
-       "params": { "a": 10 },
-       "variations": [{ "params": { "b": 1 } }, { "params": { "b": 2 } }]
+       "params": {
+         "a": 10
+       },
+       "variations": [
+         {
+           "params": {
+             "b": 1
+           }
+         },
+         {
+           "params": {
+             "b": 2
+           }
+         }
+       ]
      }
    }
    ```

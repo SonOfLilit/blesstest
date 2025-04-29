@@ -47,6 +47,7 @@
         },
         "variations": [
           {
+            "name": "a_is_3", // I can leave comments
             "params": {
               "a": 3
             }
