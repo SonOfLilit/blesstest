@@ -82,5 +82,18 @@
         "harness": "identity_3"
       }
     ]
+  },
+  "abstract_parent": {
+    "abstract": true,
+    "params": {
+      "a": 1
+    }
+  },
+  "concrete_child": {
+    "base": "abstract_parent",
+    "harness": "identity",
+    "params": {
+      "b": 2
+    }
   }
 }

@@ -11,6 +11,7 @@ ParamValue = Any
 
 
 class BaseCaseInfo(BaseModel):
+    abstract: bool = False
     params: Dict[ParamName, ParamValue] = Field(default_factory=dict)
     harness: Optional[str] = None
 
@@ -26,7 +27,7 @@ class ResolvableBaseCaseInfo(CaseInfo):
 
 class PreprocessedCaseInfo(BaseCaseInfo):
     # Harness is required in the final preprocessed case
-    harness: str
+    pass
 
 
 class PreprocessedTestCasesFile(RootModel):
@@ -141,7 +142,7 @@ def resolve_variations(
     ):
         """Recursive helper to expand variations."""
         if current_case_info.variations is None:
-            if not current_case_info.harness:
+            if not current_case_info.harness and not current_case_info.abstract:
                 raise ValueError(
                     f"Test case leaf node '{current_case_name}' reached during variation expansion "
                     f"does not have a harness defined (neither directly nor inherited)."
@@ -196,5 +197,8 @@ def preprocess_test_cases(
     resolved_bases = resolve_bases(parsed_cases)
 
     expanded_cases = resolve_variations(resolved_bases)
+    expanded_cases = {
+        name: case for name, case in expanded_cases.items() if not case.abstract
+    }
 
     return PreprocessedTestCasesFile(root=expanded_cases)
