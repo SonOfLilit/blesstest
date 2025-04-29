@@ -22,7 +22,7 @@ class VariationCaseInfo(BaseCaseInfo):
 
 
 class ResolvableBaseCaseInfo(VariationCaseInfo):
-    base: Optional[str] = None
+    base: Optional[CaseName] = None
 
 
 class PreprocessedCaseInfo(BaseCaseInfo):
@@ -55,34 +55,28 @@ def resolve_bases(
         processed_case_info: VariationCaseInfo
 
         if current_case_info.base is None:
-            case_dict = current_case_info.model_dump(
-                exclude={"base"}, exclude_unset=True
+            processed_case_info = VariationCaseInfo(
+                # name=current_case_info.name,
+                params=current_case_info.params,
+                harness=current_case_info.harness,
+                variations=current_case_info.variations,
             )
-            processed_case_info = VariationCaseInfo(**case_dict)
         else:
             processing_stack.add(case_name)
             try:
-                base_name = CaseName(current_case_info.base)
-                base_case_info = process_case(base_name)  # Returns VariationCaseInfo
-                merged_data = base_case_info.model_dump(exclude_unset=True)
-
-                current_data = current_case_info.model_dump(
-                    exclude={"base"}, exclude_unset=True
-                )
-
-                # Merge top-level fields, current overrides base
-                merged_data.update(current_data)
-
-                # Special handling for 'params': deep merge, current overrides base
-                base_params = base_case_info.params
-                current_params = current_case_info.params
-                merged_data["params"] = {**base_params, **current_params}
-
-                # Create the final VariationCaseInfo from the merged data
-                processed_case_info = VariationCaseInfo(**merged_data)
-
+                base_case_info = process_case(current_case_info.base)
             finally:
                 processing_stack.remove(case_name)  # Ensure removal even on error
+
+            processed_case_info = VariationCaseInfo(
+                # name=current_case_info.name,
+                params={
+                    **base_case_info.params,
+                    **current_case_info.params,
+                },
+                harness=current_case_info.harness or base_case_info.harness,
+                variations=current_case_info.variations,
+            )
 
         processed_cases[case_name] = processed_case_info
         return processed_case_info
@@ -196,8 +190,6 @@ def resolve_variations(
             accumulated_expanded_cases[current_case_name] = PreprocessedCaseInfo(
                 **final_case_data
             )
-            # Do NOT add to all_names here, name uniqueness is handled within _generate_variation_name
-            # all_names.add(current_case_name) # Removed
             return
 
         base_template_dict = current_case_info.model_dump(
@@ -213,7 +205,6 @@ def resolve_variations(
                 set(accumulated_expanded_cases.keys()),
                 original_input_names,
             )
-            # all_names.add(new_case_name) # Removed
 
             new_case_data = copy.deepcopy(base_template_dict)
 
