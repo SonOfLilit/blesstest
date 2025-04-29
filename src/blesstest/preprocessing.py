@@ -15,12 +15,12 @@ class BaseCaseInfo(BaseModel):
     harness: Optional[str] = None
 
 
-class VariationCaseInfo(BaseCaseInfo):
+class CaseInfo(BaseCaseInfo):
     name: Optional[str] = None
-    variations: Optional[List["VariationCaseInfo"]] = None
+    variations: Optional[List["CaseInfo"]] = None
 
 
-class ResolvableBaseCaseInfo(VariationCaseInfo):
+class ResolvableBaseCaseInfo(CaseInfo):
     base: Optional[CaseName] = None
 
 
@@ -35,12 +35,12 @@ class PreprocessedTestCasesFile(RootModel):
 
 def resolve_bases(
     raw_test_cases: Dict[CaseName, ResolvableBaseCaseInfo],
-) -> Dict[CaseName, VariationCaseInfo]:
+) -> Dict[CaseName, CaseInfo]:
     """Resolves 'base' references in test cases."""
-    processed_cases: Dict[CaseName, VariationCaseInfo] = {}
+    processed_cases: Dict[CaseName, CaseInfo] = {}
     processing_stack: Set[CaseName] = set()
 
-    def process_case(case_name: CaseName) -> VariationCaseInfo:
+    def process_case(case_name: CaseName) -> CaseInfo:
         if case_name in processed_cases:
             return processed_cases[case_name]
         if case_name not in raw_test_cases:
@@ -51,7 +51,7 @@ def resolve_bases(
             )
 
         current_case_info = raw_test_cases[case_name]
-        processed_case_info: VariationCaseInfo
+        processed_case_info: CaseInfo
 
         if current_case_info.base is None:
             processed_case_info = current_case_info
@@ -76,9 +76,10 @@ def resolve_bases(
 
 
 def _merge_base_and_variation(
-    base_case: VariationCaseInfo, variant_case: ResolvableBaseCaseInfo
-) -> VariationCaseInfo:
-    return VariationCaseInfo(
+    base_case: CaseInfo,
+    variant_case: CaseInfo,
+) -> CaseInfo:
+    return CaseInfo(
         name=variant_case.name,
         params={
             **base_case.params,
@@ -91,9 +92,7 @@ def _merge_base_and_variation(
 
 def _generate_variation_name(
     base_name: CaseName,
-    variation_data: VariationCaseInfo,
-    final_case_names: Set[CaseName],
-    original_case_names: Set[CaseName],
+    variation_data: CaseInfo,
 ) -> CaseName:
     """Generates a unique name for a variation, ensuring no collision with final/original names."""
     variation_params = variation_data.params
@@ -120,16 +119,11 @@ def _generate_variation_name(
                 f"{base_name}__{param_str[:MAX_PARAM_STR_LEN]}__{variation_hash_short}"
             )
 
-    if new_case_name in final_case_names:
-        raise ValueError(
-            f"Could not generate unique name for variation of '{base_name}'. Base name: {new_case_name}"
-        )
-
     return new_case_name
 
 
 def resolve_variations(
-    resolved_base_cases: Dict[CaseName, VariationCaseInfo],
+    resolved_base_cases: Dict[CaseName, CaseInfo],
 ) -> Dict[CaseName, PreprocessedCaseInfo]:
     """Expands test cases with potentially nested 'variations' into individual cases."""
     expanded_cases: Dict[CaseName, PreprocessedCaseInfo] = {}
@@ -137,7 +131,7 @@ def resolve_variations(
 
     def _expand_recursive(
         current_case_name: CaseName,
-        current_case_info: VariationCaseInfo,
+        current_case_info: CaseInfo,
         accumulated_expanded_cases: Dict[CaseName, PreprocessedCaseInfo],
         original_input_names: Set[CaseName],
     ):
@@ -163,9 +157,12 @@ def resolve_variations(
             new_case_name = _generate_variation_name(
                 current_case_name,
                 variation_item,
-                set(accumulated_expanded_cases.keys()),
-                original_input_names,
             )
+
+            if new_case_name in accumulated_expanded_cases:
+                raise ValueError(
+                    f"Could not generate unique name for variation of '{current_case_name}'. Base name: {new_case_name}"
+                )
 
             merged_case_info = _merge_base_and_variation(
                 current_case_info, variation_item
