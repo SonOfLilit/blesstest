@@ -3,5 +3,8 @@
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true
     },
+    "[markdown]": {
+        "editor.formatOnSave": true
+    },
     "mypy.runUsingActiveInterpreter": true
 }
