@@ -1,7 +1,5 @@
 import base64
-import copy
 import hashlib
-import json
 from typing import Any, Dict, List, NewType, Optional, Set
 
 from pydantic import BaseModel, Field, RootModel
@@ -18,6 +16,7 @@ class BaseCaseInfo(BaseModel):
 
 
 class VariationCaseInfo(BaseCaseInfo):
+    name: Optional[str] = None
     variations: Optional[List["VariationCaseInfo"]] = None
 
 
@@ -55,12 +54,7 @@ def resolve_bases(
         processed_case_info: VariationCaseInfo
 
         if current_case_info.base is None:
-            processed_case_info = VariationCaseInfo(
-                # name=current_case_info.name,
-                params=current_case_info.params,
-                harness=current_case_info.harness,
-                variations=current_case_info.variations,
-            )
+            processed_case_info = current_case_info
         else:
             processing_stack.add(case_name)
             try:
@@ -68,14 +62,8 @@ def resolve_bases(
             finally:
                 processing_stack.remove(case_name)  # Ensure removal even on error
 
-            processed_case_info = VariationCaseInfo(
-                # name=current_case_info.name,
-                params={
-                    **base_case_info.params,
-                    **current_case_info.params,
-                },
-                harness=current_case_info.harness or base_case_info.harness,
-                variations=current_case_info.variations,
+            processed_case_info = _merge_base_and_variation(
+                base_case_info, current_case_info
             )
 
         processed_cases[case_name] = processed_case_info
@@ -87,33 +75,42 @@ def resolve_bases(
     return processed_cases
 
 
+def _merge_base_and_variation(
+    base_case: VariationCaseInfo, variant_case: ResolvableBaseCaseInfo
+) -> VariationCaseInfo:
+    return VariationCaseInfo(
+        name=variant_case.name,
+        params={
+            **base_case.params,
+            **variant_case.params,
+        },
+        harness=variant_case.harness or base_case.harness,
+        variations=variant_case.variations,
+    )
+
+
 def _generate_variation_name(
     base_name: CaseName,
     variation_data: VariationCaseInfo,
-    variation_index: int,
     final_case_names: Set[CaseName],
     original_case_names: Set[CaseName],
 ) -> CaseName:
     """Generates a unique name for a variation, ensuring no collision with final/original names."""
     variation_params = variation_data.params
 
-    if not variation_params:
-        # If no params in this variation level, initial name is the base name.
+    param_str_parts = [f"{k}_{v}" for k, v in sorted(variation_params.items())]
+    if variation_data.harness:
+        param_str_parts.insert(0, variation_data.harness)
+    if not param_str_parts:
         new_case_name = base_name
     else:
-        # Generate name based on params
-        param_str_parts = [f"{k}_{v}" for k, v in sorted(variation_params.items())]
         param_str = "__".join(param_str_parts)
         MAX_PARAM_STR_LEN = 32
         if len(param_str) <= MAX_PARAM_STR_LEN:
             new_case_name = CaseName(f"{base_name}__{param_str}")
         else:
-            variation_json = json.dumps(
-                variation_data.model_dump(mode="json", exclude={"variations"}),
-                sort_keys=True,
-            )
             variation_hash = (
-                base64.b64encode(hashlib.sha256(variation_json.encode()).digest())
+                base64.b64encode(hashlib.sha256(param_str.encode()).digest())
                 .rstrip(b"=")
                 .decode("ascii")
             )
@@ -123,32 +120,9 @@ def _generate_variation_name(
                 f"{base_name}__{param_str[:MAX_PARAM_STR_LEN]}__{variation_hash_short}"
             )
 
-    # Ensure uniqueness against final and original names by appending index if necessary
-    original_new_case_name = new_case_name
-    counter = 0
-    # Check collision against the union of final generated names and original names
-    collision_check_set = final_case_names.union(original_case_names)
-    while new_case_name in collision_check_set:
-        counter += 1
-        # Use variation_index first for potentially more stable naming, then counter
-        if counter == 1:
-            new_case_name = CaseName(f"{original_new_case_name}__{variation_index}")
-        else:
-            new_case_name = CaseName(
-                f"{original_new_case_name}__{variation_index}_{counter}"
-            )
-
-        if counter > 10:  # Safety break
-            raise ValueError(
-                f"Could not generate unique name for variation of '{base_name}' (index {variation_index}) after {counter} attempts. Base name: {original_new_case_name}"
-            )
-
-    # Final check (should be redundant due to while loop but good for safety)
-    if new_case_name in collision_check_set:
+    if new_case_name in final_case_names:
         raise ValueError(
-            f"Generated variation case name '{new_case_name}' conflicts with an existing case name. "
-            f"Source case: '{base_name}', variation index: {variation_index}. "
-            "Potential hash collision or duplicate variation definition."
+            f"Could not generate unique name for variation of '{base_name}'. Base name: {new_case_name}"
         )
 
     return new_case_name
@@ -168,69 +142,42 @@ def resolve_variations(
         original_input_names: Set[CaseName],
     ):
         """Recursive helper to expand variations."""
-        # If no variations at this level, this is potentially a final test case
         if current_case_info.variations is None:
-            # Check if a harness is defined for this leaf node
             if not current_case_info.harness:
                 raise ValueError(
                     f"Test case leaf node '{current_case_name}' reached during variation expansion "
                     f"does not have a harness defined (neither directly nor inherited)."
                 )
 
-            # Convert VariationCaseInfo to PreprocessedCaseInfo before adding
-            final_case_data = current_case_info.model_dump(exclude_unset=True)
-            # Check for final collision before adding
             if current_case_name in accumulated_expanded_cases:
-                # This check is important if we modify name generation not to add __index always
                 raise ValueError(
                     f"Generated variation case name '{current_case_name}' conflicts with another expanded case name. "
                     "Potential hash collision or duplicate variation definition."
                 )
 
-            accumulated_expanded_cases[current_case_name] = PreprocessedCaseInfo(
-                **final_case_data
-            )
+            case = PreprocessedCaseInfo(**current_case_info.__dict__)
+            accumulated_expanded_cases[current_case_name] = case
             return
 
-        base_template_dict = current_case_info.model_dump(
-            exclude={"variations"}, exclude_unset=True
-        )
-        base_params = current_case_info.params
-
-        for i, variation_item in enumerate(current_case_info.variations):
+        for variation_item in current_case_info.variations:
             new_case_name = _generate_variation_name(
                 current_case_name,
                 variation_item,
-                i,
                 set(accumulated_expanded_cases.keys()),
                 original_input_names,
             )
 
-            new_case_data = copy.deepcopy(base_template_dict)
-
-            # Merge params: variation overrides current base
-            output_params = {**base_params, **variation_item.params}
-            new_case_data["params"] = output_params
-
-            # Merge other top-level fields from variation (if any, besides params/variations)
-            variation_other_data = variation_item.model_dump(
-                exclude={"params", "variations"}, exclude_unset=True
+            merged_case_info = _merge_base_and_variation(
+                current_case_info, variation_item
             )
-            new_case_data.update(variation_other_data)
 
-            # Create the intermediate VariationCaseInfo for recursion
-            next_level_case_info = VariationCaseInfo(**new_case_data)
-            next_level_case_info.variations = variation_item.variations
-
-            # Recursively expand the next level
             _expand_recursive(
                 new_case_name,
-                next_level_case_info,
+                merged_case_info,
                 accumulated_expanded_cases,
                 original_input_names,
             )
 
-    # --- Main part of resolve_variations ---
     for case_name, case_info in resolved_base_cases.items():
         _expand_recursive(case_name, case_info, expanded_cases, original_names)
 
@@ -238,7 +185,7 @@ def resolve_variations(
 
 
 def preprocess_test_cases(
-    raw_test_cases: Dict[CaseName, Dict[str, Any]],  # Raw input is still Dict[str, Any]
+    raw_test_cases: Dict[CaseName, Dict[str, Any]],
 ) -> PreprocessedTestCasesFile:
     """Applies all preprocessing steps: resolves bases and variations."""
     parsed_cases: Dict[CaseName, ResolvableBaseCaseInfo] = {
