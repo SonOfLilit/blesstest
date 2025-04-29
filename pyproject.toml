@@ -8,8 +8,8 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "json5>=0.12.0",
     "pydantic>=2.11.3",
+    "pyjson5>=1.6.8",
     "pytest>=8.3.5",
 ]
 

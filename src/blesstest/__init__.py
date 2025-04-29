@@ -1,6 +1,6 @@
 from __future__ import annotations
 import pathlib
-import json5
+import pyjson5
 
 import pytest
 
@@ -29,13 +29,15 @@ def pytest_collect_file(parent, file_path: pathlib.PosixPath):
 
 class BlessTestFile(pytest.File):
     def collect(self):
-        raw = json5.loads(self.path.read_text())
+        raw = pyjson5.loads(self.path.read_text())
 
         processed_test_cases = preprocess_test_cases(raw)
         print(f"processed_test_cases: {processed_test_cases}")
         validated_data = PreprocessedTestCasesFile.model_validate(processed_test_cases)
         print(f"BlessTestFile collect validated_data: {validated_data}")
-        test_file_name = self.path.name.removesuffix(".blesstest.json")
+        test_file_name = self.path.name.removesuffix(".blesstest.json").removesuffix(
+            ".blesstest.jsonc"
+        )
 
         for test_name_from_json, test_case_info in validated_data.root.items():
             test_name = f"{test_file_name}_{test_name_from_json}"
