@@ -95,6 +95,10 @@ def _generate_variation_name(
     variation_data: CaseInfo,
 ) -> CaseName:
     """Generates a unique name for a variation, ensuring no collision with final/original names."""
+
+    if variation_data.name:
+        return CaseName(f"{base_name}__{variation_data.name}")
+
     variation_params = variation_data.params
 
     param_str_parts = [f"{k}_{v}" for k, v in sorted(variation_params.items())]
