@@ -2,30 +2,23 @@ import base64
 import copy
 import hashlib
 import json
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, NewType, Optional, Set
 
-from pydantic import BaseModel, Field, ConfigDict, RootModel
+from pydantic import BaseModel, Field, RootModel
 
 
-CaseName = str
-
-ModelConfig = ConfigDict(extra="allow")
+CaseName = NewType("CaseName", str)
+ParamName = NewType("ParamName", str)
+ParamValue = Any
 
 
 class BaseCaseInfo(BaseModel):
-    model_config = ModelConfig
-    params: Dict[str, Any] = Field(default_factory=dict)
+    params: Dict[ParamName, ParamValue] = Field(default_factory=dict)
     harness: Optional[str] = None
 
 
-class VariationItem(BaseModel):
-    model_config = ModelConfig
-    params: Dict[str, Any] = Field(default_factory=dict)
-    variations: Optional[List["VariationItem"]] = None
-
-
 class VariationCaseInfo(BaseCaseInfo):
-    variations: Optional[List[VariationItem]] = None
+    variations: Optional[List["VariationCaseInfo"]] = None
 
 
 class ResolvableBaseCaseInfo(VariationCaseInfo):
@@ -38,7 +31,7 @@ class PreprocessedCaseInfo(BaseCaseInfo):
 
 
 class PreprocessedTestCasesFile(RootModel):
-    root: dict[str, PreprocessedCaseInfo]
+    root: dict[CaseName, PreprocessedCaseInfo]
 
 
 def resolve_bases(
@@ -69,7 +62,7 @@ def resolve_bases(
         else:
             processing_stack.add(case_name)
             try:
-                base_name = current_case_info.base
+                base_name = CaseName(current_case_info.base)
                 base_case_info = process_case(base_name)  # Returns VariationCaseInfo
                 merged_data = base_case_info.model_dump(exclude_unset=True)
 
@@ -102,7 +95,7 @@ def resolve_bases(
 
 def _generate_variation_name(
     base_name: CaseName,
-    variation_data: VariationItem,
+    variation_data: VariationCaseInfo,
     variation_index: int,
     final_case_names: Set[CaseName],
     original_case_names: Set[CaseName],
@@ -119,7 +112,7 @@ def _generate_variation_name(
         param_str = "__".join(param_str_parts)
         MAX_PARAM_STR_LEN = 32
         if len(param_str) <= MAX_PARAM_STR_LEN:
-            new_case_name = f"{base_name}__{param_str}"
+            new_case_name = CaseName(f"{base_name}__{param_str}")
         else:
             variation_json = json.dumps(
                 variation_data.model_dump(mode="json", exclude={"variations"}),
@@ -132,7 +125,7 @@ def _generate_variation_name(
             )
             hash_len = 3
             variation_hash_short = variation_hash[:hash_len]
-            new_case_name = (
+            new_case_name = CaseName(
                 f"{base_name}__{param_str[:MAX_PARAM_STR_LEN]}__{variation_hash_short}"
             )
 
@@ -145,9 +138,11 @@ def _generate_variation_name(
         counter += 1
         # Use variation_index first for potentially more stable naming, then counter
         if counter == 1:
-            new_case_name = f"{original_new_case_name}__{variation_index}"
+            new_case_name = CaseName(f"{original_new_case_name}__{variation_index}")
         else:
-            new_case_name = f"{original_new_case_name}__{variation_index}_{counter}"
+            new_case_name = CaseName(
+                f"{original_new_case_name}__{variation_index}_{counter}"
+            )
 
         if counter > 10:  # Safety break
             raise ValueError(
