@@ -1,4 +1,5 @@
 {
   "a": 1,
-  "b": 10
+  "b": 10,
+  "harness_name": "identity"
 }

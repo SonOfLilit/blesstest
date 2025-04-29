@@ -60,5 +60,18 @@
         }
       }
     ]
+  },
+  "other_harness": {
+    "harness": "identity_2",
+    "base": "happy_path",
+    "params": {
+      "b": 5
+    },
+    "variations": [
+      {},
+      {
+        "harness": "identity_3"
+      }
+    ]
   }
 }
