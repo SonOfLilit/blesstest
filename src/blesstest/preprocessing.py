@@ -116,7 +116,7 @@ def _expand_variations(
             original_variations=original_variation.variations,
             dont_conflict_with=dont_conflict_with,
         )
-        edited_variation = original_variation.copy(
+        edited_variation = original_variation.model_copy(
             update={"variations": some_edited_sub_variations}
         )
         if some_edited_sub_variations:
