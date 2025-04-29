@@ -20,15 +20,6 @@ def pytest_collect_file(parent, file_path: pathlib.PosixPath):
         return BlessTestFile.from_parent(parent, path=file_path)
 
 
-# class TestCaseInfo(pydantic.BaseModel):
-#     harness: str
-#     params: dict[str, Any]
-
-
-# class TestCasesFile(pydantic.RootModel):
-#     root: dict[str, TestCaseInfo]
-
-
 class BlessTestFile(pytest.File):
     def collect(self):
         raw = pyjson5.loads(self.path.read_text())

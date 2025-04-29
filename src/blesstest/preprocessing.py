@@ -78,10 +78,32 @@ def resolve_bases(
     return processed_cases
 
 
+def _check_conflict(original_variation: CaseInfo, dont_conflict_with: CaseInfo) -> None:
+    # If any of the attributes exist in both, and are different, raise an error
+    if (
+        original_variation.harness
+        and dont_conflict_with.harness
+        and original_variation.harness != dont_conflict_with.harness
+    ):
+        raise ValueError(
+            f"Case {original_variation} conflicts with {dont_conflict_with}: Both have a harness but it is different: {original_variation.harness} != {dont_conflict_with.harness}"
+        )
+    for param_name, param_value in original_variation.params.items():
+        if param_name in dont_conflict_with.params:
+            if dont_conflict_with.params[param_name] != param_value:
+                raise ValueError(
+                    f"Case {original_variation} conflicts with {dont_conflict_with}: Both have a param '{param_name}' but it is different: {param_value} != {dont_conflict_with.params[param_name]}"
+                )
+
+
 def _expand_variations(
     original_variations: List[CaseInfo] | None,
     variations_to_add: List[CaseInfo] | None,
+    dont_conflict_with: CaseInfo,
 ) -> List[CaseInfo] | None:
+    for original_variation in original_variations or []:
+        _check_conflict(original_variation, dont_conflict_with)
+
     if not original_variations:
         return variations_to_add
     if not variations_to_add:
@@ -92,6 +114,7 @@ def _expand_variations(
         some_edited_sub_variations = _expand_variations(
             variations_to_add=variations_to_add,
             original_variations=original_variation.variations,
+            dont_conflict_with=dont_conflict_with,
         )
         edited_variation = original_variation.copy(
             update={"variations": some_edited_sub_variations}
@@ -111,8 +134,9 @@ def _merge_base_and_variation(
     preserve_abstract: bool,
 ) -> CaseInfo:
     variant_case_variations = _expand_variations(
-        original_variations=variant_case.variations,
-        variations_to_add=base_case.variations,
+        original_variations=base_case.variations,
+        variations_to_add=variant_case.variations,
+        dont_conflict_with=variant_case,
     )
 
     return CaseInfo(
