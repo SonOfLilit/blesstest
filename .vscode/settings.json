@@ -6,5 +6,8 @@
     "[markdown]": {
         "editor.formatOnSave": true
     },
+    "[jsonc]": {
+        "editor.formatOnSave": true
+    },
     "mypy.runUsingActiveInterpreter": true
 }
