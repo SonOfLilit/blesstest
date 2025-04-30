@@ -20,13 +20,16 @@ def pytest_collect_file(parent, file_path: pathlib.PosixPath):
         return BlessTestFile.from_parent(parent, path=file_path)
 
 
+def process_file(raw_content: dict) -> PreprocessedTestCasesFile:
+    processed_test_cases = preprocess_test_cases(raw_content)
+    validated_data = PreprocessedTestCasesFile.model_validate(processed_test_cases)
+    return validated_data
+
+
 class BlessTestFile(pytest.File):
     def collect(self):
         raw = pyjson5.loads(self.path.read_text())
-
-        processed_test_cases = preprocess_test_cases(raw)
-        print(f"processed_test_cases: {processed_test_cases}")
-        validated_data = PreprocessedTestCasesFile.model_validate(processed_test_cases)
+        validated_data = process_file(raw)
         print(f"BlessTestFile collect validated_data: {validated_data}")
         test_file_name = self.path.name.removesuffix(".blesstest.json").removesuffix(
             ".blesstest.jsonc"

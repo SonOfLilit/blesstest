@@ -1,0 +1,12 @@
+{
+  "result": {
+    "happy_path": {
+      "abstract": false,
+      "params": {
+        "a": 1,
+        "b": 2
+      },
+      "harness": "my_harness"
+    }
+  }
+}
