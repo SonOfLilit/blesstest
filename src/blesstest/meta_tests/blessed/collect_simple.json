@@ -1,12 +1,26 @@
 {
+  "harness": "collect",
+  "params": {
+    "input": {
+      "happy_path": {
+        "harness": "my_harness",
+        "params": {
+          "a": 1,
+          "b": 2
+        }
+      }
+    }
+  },
   "result": {
-    "happy_path": {
-      "abstract": false,
-      "params": {
-        "a": 1,
-        "b": 2
-      },
-      "harness": "my_harness"
+    "result": {
+      "happy_path": {
+        "abstract": false,
+        "params": {
+          "a": 1,
+          "b": 2
+        },
+        "harness": "my_harness"
+      }
     }
   }
 }

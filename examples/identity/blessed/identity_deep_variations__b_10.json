@@ -1,5 +1,11 @@
 {
-  "a": 1,
-  "b": 10,
-  "harness_name": "identity"
+  "harness": "identity",
+  "params": {
+    "a": 1,
+    "b": 10
+  },
+  "result": {
+    "a": 1,
+    "b": 10
+  }
 }

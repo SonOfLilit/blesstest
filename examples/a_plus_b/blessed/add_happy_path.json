@@ -1,3 +1,10 @@
 {
-  "result": 3
+  "harness": "my_harness",
+  "params": {
+    "a": 1,
+    "b": 2
+  },
+  "result": {
+    "result": 3
+  }
 }

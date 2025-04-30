@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 import pathlib
 import pyjson5
 
@@ -61,7 +62,13 @@ class BlessTestItem(pytest.Item):
         output_dir = self.path.parent / "blessed"
         output_dir.mkdir(parents=True, exist_ok=True)
         output_file_path = output_dir / f"{self.name}.json"
-        json_output = validated_output.model_dump_json(indent=2) + "\n"
+
+        output_file_structure: dict = {
+            "harness": self.test_case_info.harness,
+            "params": test_input.dict(),
+            "result": validated_output.dict(),
+        }
+        json_output = json.dumps(output_file_structure, indent=2) + "\n"
 
         # Write the current output FIRST
         output_file_path.write_text(json_output)
