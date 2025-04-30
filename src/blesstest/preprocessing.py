@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import re
+import itertools
 from typing import Any, Dict, List, NewType, Optional, Set
 
 from pydantic import BaseModel, Field, RootModel
@@ -256,30 +257,31 @@ def ensure_string(input: Any) -> str:
 def _expand_parameter_variations(
     cases: Dict[CaseName, ResolvableBaseCaseInfo],
 ) -> Dict[CaseName, ResolvableBaseCaseInfo]:
-    """Expands parameter variations like '[a]' and '[[a,b]]'."""
+    """Expands parameter variations like '[a]' and '[[a,b]]', computing Cartesian product if multiple exist."""
     expanded_cases: Dict[CaseName, ResolvableBaseCaseInfo] = {}
     for name, case_info in cases.items():
-        new_variations: List[CaseInfo] = []
+        param_variation_groups: List[List[Dict[ParamName, ParamValue]]] = []
         params_to_remove: List[str] = []
+        explicit_variations = case_info.variations  # Store original explicit variations
+        case_info.variations = None  # Clear variations temporarily
 
+        # Collect all parameter variation specifications
         for param_key, param_value in list(case_info.params.items()):
-            # Handle '[a]' syntax
             single_match = re.fullmatch(r"\[(\w+)\]", param_key)
             if single_match and isinstance(param_value, list):
                 params_to_remove.append(param_key)
-                param_name = single_match.group(1)
-                for value in param_value:
-                    new_variations.append(
-                        CaseInfo(params={ParamName(param_name): value})
-                    )
+                param_name = ParamName(single_match.group(1))
+                group = [{param_name: v} for v in param_value]
+                param_variation_groups.append(group)
+                continue  # Ensure only one match per key
 
-            # Handle '[[a, b]]' syntax
             multi_match = re.fullmatch(r"\[\[(\w+(?:,\s*\w+)*)\]\]", param_key)
             if multi_match and isinstance(param_value, list):
                 params_to_remove.append(param_key)
                 param_names = [
                     ParamName(p.strip()) for p in multi_match.group(1).split(",")
                 ]
+                group = []
                 for value_tuple in param_value:
                     if not isinstance(value_tuple, list) or len(value_tuple) != len(
                         param_names
@@ -289,32 +291,50 @@ def _expand_parameter_variations(
                             f"Expected list of lists with length {len(param_names)}, got {value_tuple}"
                         )
                     variation_params = dict(zip(param_names, value_tuple))
-                    new_variations.append(CaseInfo(params=variation_params))
+                    group.append(variation_params)
+                param_variation_groups.append(group)
 
-        if new_variations:
+        if param_variation_groups:
             # Remove the variation-generating keys from original params
             for key in params_to_remove:
                 del case_info.params[ParamName(key)]
 
-            # Merge generated variations with existing ones
-            if case_info.variations:
-                # Add new variations as sub-variations to existing ones
-                combined_variations: List[CaseInfo] = []
-                for existing_variation in case_info.variations:
-                    # Check for conflicts before merging - simplified for now
-                    merged_sub_variations = (
-                        existing_variation.variations or []
-                    ) + new_variations
-                    combined_variations.append(
-                        existing_variation.model_copy(
-                            update={"variations": merged_sub_variations}
-                        )
-                    )
-                case_info.variations = combined_variations
-            else:
-                case_info.variations = new_variations
+            # Compute Cartesian product of parameter variations
+            combined_param_variations: List[CaseInfo] = []
+            product_results = list(itertools.product(*param_variation_groups))
+            # product_results contains tuples of dicts, e.g., [({'a': 1}, {'b': 3}), ({'a': 1}, {'b': 4}), ...]
 
-        expanded_cases[name] = case_info
+            for param_tuple in product_results:
+                merged_params: Dict[ParamName, ParamValue] = {}
+                for param_dict in param_tuple:
+                    # Check for conflicts (though unlikely with this structure)
+                    overlapping_keys = merged_params.keys() & param_dict.keys()
+                    if overlapping_keys:
+                        # This indicates an issue like having both "[a]" and "[[a,b]]" which is ambiguous
+                        raise ValueError(
+                            f"Overlapping parameter keys found during variation expansion in case '{name}': {overlapping_keys}"
+                        )
+                    merged_params.update(param_dict)
+                combined_param_variations.append(CaseInfo(params=merged_params))
+
+            # Create final variations: Each product result gets the original explicit variations nested inside
+            final_variations: List[CaseInfo] = []
+            if (
+                not combined_param_variations
+            ):  # If product resulted in empty list (e.g. one input list was empty)
+                pass  # Keep variations as None or empty list
+            else:
+                for gen_var in combined_param_variations:
+                    # Assign the original explicit variations to the 'variations' field of the generated one
+                    # Make a deep copy if explicit_variations might be mutated elsewhere, but Pydantic models handle this well usually.
+                    gen_var.variations = explicit_variations
+                    final_variations.append(gen_var)
+                case_info.variations = final_variations
+        else:
+            # No parameter variations found, restore original explicit variations
+            case_info.variations = explicit_variations
+
+        expanded_cases[name] = case_info  # Add potentially modified case back
     return expanded_cases
 
 

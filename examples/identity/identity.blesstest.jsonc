@@ -141,6 +141,13 @@
       "b": 3
     }
   },
+  "param_variations_cartesian_product": {
+    "harness": "identity",
+    "params": {
+      "[a]": [1, 2],
+      "[b]": [1, 2]
+    }
+  },
   "2_param_variations": {
     "harness": "identity",
     "params": {
