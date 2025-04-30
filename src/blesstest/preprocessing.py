@@ -255,87 +255,92 @@ def ensure_string(input: Any) -> str:
 
 
 def _expand_parameter_variations(
-    cases: Dict[CaseName, ResolvableBaseCaseInfo],
-) -> Dict[CaseName, ResolvableBaseCaseInfo]:
-    """Expands parameter variations like '[a]' and '[[a,b]]', computing Cartesian product if multiple exist."""
-    expanded_cases: Dict[CaseName, ResolvableBaseCaseInfo] = {}
-    for name, case_info in cases.items():
-        param_variation_groups: List[List[Dict[ParamName, ParamValue]]] = []
-        params_to_remove: List[str] = []
-        explicit_variations = case_info.variations  # Store original explicit variations
-        case_info.variations = None  # Clear variations temporarily
+    case_info: CaseInfo,
+) -> None:
+    """Recursively expands parameter variations like '[a]' and '[[a,b]]',
+    computing Cartesian product if multiple exist at the same level.
+    Raises error if explicit variations and param variations co-exist at the same level.
+    """
+    param_variation_groups: List[List[Dict[ParamName, ParamValue]]] = []
+    params_to_remove: List[str] = []
+    explicit_variations = case_info.variations  # Store original explicit variations
+    has_param_variations = False
 
-        # Collect all parameter variation specifications
-        for param_key, param_value in list(case_info.params.items()):
-            single_match = re.fullmatch(r"\[(\w+)\]", param_key)
-            if single_match and isinstance(param_value, list):
-                params_to_remove.append(param_key)
-                param_name = ParamName(single_match.group(1))
-                group = [{param_name: v} for v in param_value]
-                param_variation_groups.append(group)
-                continue  # Ensure only one match per key
+    # 1. Collect parameter variation specifications for the CURRENT level
+    for param_key, param_value in list(case_info.params.items()):
+        is_param_variation = False
+        single_match = re.fullmatch(r"\[(\w+)\]", param_key)
+        if single_match and isinstance(param_value, list):
+            params_to_remove.append(param_key)
+            param_name = ParamName(single_match.group(1))
+            group = [{param_name: v} for v in param_value]
+            param_variation_groups.append(group)
+            is_param_variation = True
+            # continue # Don't continue, need to check multi_match as well for conflict detection
 
-            multi_match = re.fullmatch(r"\[\[(\w+(?:,\s*\w+)*)\]\]", param_key)
-            if multi_match and isinstance(param_value, list):
-                params_to_remove.append(param_key)
-                param_names = [
-                    ParamName(p.strip()) for p in multi_match.group(1).split(",")
-                ]
-                group = []
-                for value_tuple in param_value:
-                    if not isinstance(value_tuple, list) or len(value_tuple) != len(
-                        param_names
-                    ):
-                        raise ValueError(
-                            f"Invalid value format for '{param_key}' in case '{name}'. "
-                            f"Expected list of lists with length {len(param_names)}, got {value_tuple}"
-                        )
-                    variation_params = dict(zip(param_names, value_tuple))
-                    group.append(variation_params)
-                param_variation_groups.append(group)
+        multi_match = re.fullmatch(r"\[\[(\w+(?:,\s*\w+)*)\]\]", param_key)
+        if multi_match and isinstance(param_value, list):
+            if is_param_variation:  # Prevent matching both [a] and [[a]] for the same key if needed? unlikely
+                raise ValueError(f"Ambiguous parameter variation key '{param_key}'.")
+            params_to_remove.append(param_key)
+            param_names = [
+                ParamName(p.strip()) for p in multi_match.group(1).split(",")
+            ]
+            group = []
+            for value_tuple in param_value:
+                if not isinstance(value_tuple, list) or len(value_tuple) != len(
+                    param_names
+                ):
+                    raise ValueError(
+                        f"Invalid value format for '{param_key}'. "
+                        f"Expected list of lists with length {len(param_names)}, got {value_tuple}"
+                    )
+                variation_params = dict(zip(param_names, value_tuple))
+                group.append(variation_params)
+            param_variation_groups.append(group)
+            is_param_variation = True
 
-        if param_variation_groups:
-            # Remove the variation-generating keys from original params
-            for key in params_to_remove:
-                del case_info.params[ParamName(key)]
+        if is_param_variation:
+            has_param_variations = True
 
-            # Compute Cartesian product of parameter variations
-            combined_param_variations: List[CaseInfo] = []
-            product_results = list(itertools.product(*param_variation_groups))
-            # product_results contains tuples of dicts, e.g., [({'a': 1}, {'b': 3}), ({'a': 1}, {'b': 4}), ...]
+    # 2. Check for conflict: explicit variations AND parameter variations at the same level
+    if explicit_variations and has_param_variations:
+        raise ValueError(
+            "Cannot define both explicit 'variations' and parameter variations (e.g., '[a]' or '[[a, b]]') at the same level."
+        )
 
-            for param_tuple in product_results:
-                merged_params: Dict[ParamName, ParamValue] = {}
-                for param_dict in param_tuple:
-                    # Check for conflicts (though unlikely with this structure)
-                    overlapping_keys = merged_params.keys() & param_dict.keys()
-                    if overlapping_keys:
-                        # This indicates an issue like having both "[a]" and "[[a,b]]" which is ambiguous
-                        raise ValueError(
-                            f"Overlapping parameter keys found during variation expansion in case '{name}': {overlapping_keys}"
-                        )
-                    merged_params.update(param_dict)
-                combined_param_variations.append(CaseInfo(params=merged_params))
+    # 3. Process parameter variations for the CURRENT level if they exist
+    if param_variation_groups:
+        # Remove the variation-generating keys from original params
+        for key in params_to_remove:
+            del case_info.params[ParamName(key)]
 
-            # Create final variations: Each product result gets the original explicit variations nested inside
-            final_variations: List[CaseInfo] = []
-            if (
-                not combined_param_variations
-            ):  # If product resulted in empty list (e.g. one input list was empty)
-                pass  # Keep variations as None or empty list
-            else:
-                for gen_var in combined_param_variations:
-                    # Assign the original explicit variations to the 'variations' field of the generated one
-                    # Make a deep copy if explicit_variations might be mutated elsewhere, but Pydantic models handle this well usually.
-                    gen_var.variations = explicit_variations
-                    final_variations.append(gen_var)
-                case_info.variations = final_variations
-        else:
-            # No parameter variations found, restore original explicit variations
-            case_info.variations = explicit_variations
+        # Compute Cartesian product
+        combined_param_variations: List[CaseInfo] = []
+        product_results = list(itertools.product(*param_variation_groups))
 
-        expanded_cases[name] = case_info  # Add potentially modified case back
-    return expanded_cases
+        for param_tuple in product_results:
+            merged_params: Dict[ParamName, ParamValue] = {}
+            for param_dict in param_tuple:
+                overlapping_keys = merged_params.keys() & param_dict.keys()
+                if overlapping_keys:
+                    raise ValueError(
+                        f"Overlapping parameter keys found during variation expansion: {overlapping_keys}"
+                    )
+                merged_params.update(param_dict)
+            combined_param_variations.append(CaseInfo(params=merged_params))
+
+        # If product is empty, variations list should be empty
+        case_info.variations = (
+            combined_param_variations if combined_param_variations else None
+        )
+        # Note: We intentionally discard explicit_variations here because they conflict
+
+    # 4. Recurse into the variations (either original explicit or newly generated ones)
+    if case_info.variations:
+        for variation in case_info.variations:
+            # We pass the variation object itself, which is modified in place
+            _expand_parameter_variations(variation)
 
 
 def preprocess_test_cases(
@@ -346,10 +351,11 @@ def preprocess_test_cases(
         name: ResolvableBaseCaseInfo(**data) for name, data in raw_test_cases.items()
     }
 
-    # Expand parameter variations first
-    cases_with_param_variations_expanded = _expand_parameter_variations(parsed_cases)
+    # Expand parameter variations recursively first
+    for case_info in parsed_cases.values():
+        _expand_parameter_variations(case_info)
 
-    resolved_bases = resolve_bases(cases_with_param_variations_expanded)
+    resolved_bases = resolve_bases(parsed_cases)
 
     expanded_cases = resolve_variations(resolved_bases)
     concrete_cases: dict[CaseName, PreprocessedCaseInfo] = {

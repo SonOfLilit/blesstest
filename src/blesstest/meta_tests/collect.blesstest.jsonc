@@ -287,5 +287,55 @@
         }
       }
     }
+  },
+  "param_variations_with_variations_is_error": {
+    "harness": "collect",
+    "params": {
+      "input": {
+        "case": {
+          "harness": "h",
+          "params": {
+            "[a]": [1, 2]
+          },
+          "variations": [
+            {
+              "params": {
+                "b": 1
+              }
+            },
+            {
+              "params": {
+                "b": 2
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "param_variations_within_variations_is_ok": {
+    "harness": "collect",
+    "params": {
+      "input": {
+        "case": {
+          "harness": "h",
+          "params": {
+            "a": 1
+          },
+          "variations": [
+            {
+              "params": {
+                "b": 1
+              }
+            },
+            {
+              "params": {
+                "[b]": [2, 3]
+              }
+            }
+          ]
+        }
+      }
+    }
   }
 }

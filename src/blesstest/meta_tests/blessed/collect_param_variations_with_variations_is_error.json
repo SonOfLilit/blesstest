@@ -1,0 +1,31 @@
+{
+  "harness": "collect",
+  "params": {
+    "input": {
+      "case": {
+        "harness": "h",
+        "params": {
+          "[a]": [
+            1,
+            2
+          ]
+        },
+        "variations": [
+          {
+            "params": {
+              "b": 1
+            }
+          },
+          {
+            "params": {
+              "b": 2
+            }
+          }
+        ]
+      }
+    }
+  },
+  "result": {
+    "exception": "Cannot define both explicit 'variations' and parameter variations (e.g., '[a]' or '[[a, b]]') at the same level."
+  }
+}

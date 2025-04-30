@@ -1,0 +1,53 @@
+{
+  "harness": "collect",
+  "params": {
+    "input": {
+      "case": {
+        "harness": "h",
+        "params": {
+          "a": 1
+        },
+        "variations": [
+          {
+            "params": {
+              "b": 1
+            }
+          },
+          {
+            "params": {
+              "[b]": [
+                2,
+                3
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "result": {
+    "result": {
+      "case__b_1": {
+        "params": {
+          "a": 1,
+          "b": 1
+        },
+        "harness": "h"
+      },
+      "case__b_2": {
+        "params": {
+          "a": 1,
+          "b": 2
+        },
+        "harness": "h"
+      },
+      "case__b_3": {
+        "params": {
+          "a": 1,
+          "b": 3
+        },
+        "harness": "h"
+      }
+    }
+  }
+}
