@@ -5,11 +5,6 @@ from blesstest.preprocessing import PreprocessedTestCasesFile
 from blesstest import process_file
 
 
-# Function to test
-def add(a, b):
-    return a + b
-
-
 class HarnessInput(pydantic.BaseModel):
     input: dict
 

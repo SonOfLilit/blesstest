@@ -24,3 +24,6 @@ repos:
     hooks:
     -   id: mypy
         # files: ^(src/|testing/|scripts/)
+        additional_dependencies:
+        - pydantic
+        - pytest

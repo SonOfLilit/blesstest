@@ -25,9 +25,9 @@ class ResolvableBaseCaseInfo(CaseInfo):
     base: Optional[CaseName] = None
 
 
-class PreprocessedCaseInfo(BaseCaseInfo):
-    # Harness is required in the final preprocessed case
-    pass
+class PreprocessedCaseInfo(BaseModel):
+    params: Dict[ParamName, ParamValue] = Field(default_factory=dict)
+    harness: str
 
 
 class PreprocessedTestCasesFile(RootModel):
@@ -189,17 +189,17 @@ def _generate_variation_name(
 
 def resolve_variations(
     resolved_base_cases: Dict[CaseName, CaseInfo],
-) -> Dict[CaseName, PreprocessedCaseInfo]:
+) -> Dict[CaseName, BaseCaseInfo]:
     """Expands test cases with potentially nested 'variations' into individual cases."""
-    expanded_cases: Dict[CaseName, PreprocessedCaseInfo] = {}
+    expanded_cases: Dict[CaseName, BaseCaseInfo] = {}
     original_names = set(resolved_base_cases.keys())
 
     def _expand_recursive(
         current_case_name: CaseName,
         current_case_info: CaseInfo,
-        accumulated_expanded_cases: Dict[CaseName, PreprocessedCaseInfo],
+        accumulated_expanded_cases: Dict[CaseName, BaseCaseInfo],
         original_input_names: Set[CaseName],
-    ):
+    ) -> None:
         """Recursive helper to expand variations."""
         if current_case_info.variations is None:
             if not current_case_info.harness and not current_case_info.abstract:
@@ -214,8 +214,7 @@ def resolve_variations(
                     "Potential hash collision or duplicate variation definition."
                 )
 
-            case = PreprocessedCaseInfo(**current_case_info.__dict__)
-            accumulated_expanded_cases[current_case_name] = case
+            accumulated_expanded_cases[current_case_name] = current_case_info
             return
 
         for variation_item in current_case_info.variations:
@@ -252,6 +251,12 @@ def resolve_variations(
     return expanded_cases
 
 
+def ensure_string(input: Any) -> str:
+    if not isinstance(input, str):
+        raise ValueError(f"Expected a string, got {type(input)}: {input}")
+    return input
+
+
 def preprocess_test_cases(
     raw_test_cases: Dict[CaseName, Dict[str, Any]],
 ) -> PreprocessedTestCasesFile:
@@ -263,8 +268,13 @@ def preprocess_test_cases(
     resolved_bases = resolve_bases(parsed_cases)
 
     expanded_cases = resolve_variations(resolved_bases)
-    expanded_cases = {
-        name: case for name, case in expanded_cases.items() if not case.abstract
+    concrete_cases: dict[CaseName, PreprocessedCaseInfo] = {
+        name: PreprocessedCaseInfo(
+            params=case.params,
+            harness=ensure_string(case.harness),
+        )
+        for name, case in expanded_cases.items()
+        if not case.abstract
     }
 
-    return PreprocessedTestCasesFile(root=expanded_cases)
+    return PreprocessedTestCasesFile(root=concrete_cases)

@@ -1,7 +1,7 @@
 import sys
 import inspect
 import pydantic
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar
 
 
 class Harness(pydantic.BaseModel):
@@ -13,7 +13,10 @@ class Harness(pydantic.BaseModel):
 all_harnesses: dict[str, Harness] = {}
 
 
-def harness(func: Callable[[Any], Any]):
+TCallable = TypeVar("TCallable", bound=Callable[[Any], Any])
+
+
+def harness(func: TCallable) -> TCallable:
     # Get the module object where the decorated function is defined
     module_name = func.__module__
     if module_name not in sys.modules:

@@ -44,7 +44,6 @@
   "result": {
     "result": {
       "child_complex__a_1": {
-        "abstract": false,
         "params": {
           "b": 2,
           "a": 1
@@ -52,7 +51,6 @@
         "harness": "identity_3"
       },
       "child_complex__a_2__name-21": {
-        "abstract": false,
         "params": {
           "b": 2,
           "a": 21
@@ -60,7 +58,6 @@
         "harness": "identity_3"
       },
       "child_complex__a_2__identity_2__a_22": {
-        "abstract": false,
         "params": {
           "b": 2,
           "a": 22

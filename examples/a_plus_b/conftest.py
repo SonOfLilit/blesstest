@@ -2,8 +2,8 @@ from blesstest import harness, pytest_collect_file  # noqa
 import pydantic
 
 
-# Function to test
-def add(a, b):
+# Function to test.
+def add(a, b):  # type: ignore # Demonstrating that typing is optional here
     return a + b
 
 
