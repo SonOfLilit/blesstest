@@ -1,0 +1,18 @@
+{
+  "harness": "collect",
+  "params": {
+    "input": {
+      "double_empty_variations": {
+        "abstract": true,
+        "harness": "h",
+        "variations": [
+          {},
+          {}
+        ]
+      }
+    }
+  },
+  "result": {
+    "exception": "Generated variation case name 'double_empty_variations' conflicts with another expanded case name. Potential hash collision or duplicate variation definition."
+  }
+}

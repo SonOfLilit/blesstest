@@ -223,11 +223,6 @@ def resolve_variations(
                 variation_item,
             )
 
-            if new_case_name in accumulated_expanded_cases:
-                raise ValueError(
-                    f"Could not generate unique name for variation of '{current_case_name}'. Base name: {new_case_name}"
-                )
-
             current_case_without_variations = current_case_info.model_copy(
                 update={"variations": None}
             )

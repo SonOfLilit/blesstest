@@ -19,28 +19,32 @@
       "input": {
         "base_complex": {
           "abstract": true,
-          "harness": "identity",
+          "harness": "h",
+          "params": {
+            "base_param": "base_value"
+          },
           "variations": [
             {
               "params": {
-                "a": 1
+                "base_var_param": "base1"
               }
             },
             {
               "params": {
-                "a": 2
+                "base_var_param": "base2"
               },
               "variations": [
                 {
-                  "name": "name-21",
+                  "name": "varname",
                   "params": {
-                    "a": 21
+                    "base_subvar_param": "subbase1",
+                    "base_var_param": "override"
                   }
                 },
                 {
-                  "harness": "identity_2",
+                  "harness": "h2",
                   "params": {
-                    "a": 22
+                    "base_subvar_param": "subbase2"
                   }
                 }
               ]
@@ -49,10 +53,237 @@
         },
         "child_complex": {
           "base": "base_complex",
-          "harness": "identity_3",
           "params": {
-            "b": 2
+            "child_param": "child_value"
           }
+        }
+      }
+    }
+  },
+  "multiple_multiple_simple": {
+    "harness": "collect",
+    "params": {
+      "input": {
+        "base": {
+          "abstract": true,
+          "harness": "h",
+          "params": {
+            "base_param": "base_value"
+          },
+          "variations": [
+            {
+              "params": {
+                "base_var": "A"
+              }
+            },
+            {
+              "params": {
+                "base_var": "B"
+              }
+            }
+          ]
+        },
+        "child": {
+          "base": "base",
+          "params": {
+            "child_param": "child_value"
+          },
+          "variations": [
+            {
+              "params": {
+                "child_var": "C"
+              }
+            },
+            {
+              "params": {
+                "child_var": "D"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "multiple_multiple_deep": {
+    "harness": "collect",
+    "params": {
+      "input": {
+        "base": {
+          "abstract": true,
+          "harness": "h",
+          "params": {
+            "base_param": "base_value"
+          },
+          "variations": [
+            {
+              "params": {
+                "base_var": "A"
+              },
+              "variations": [
+                {
+                  "params": {
+                    "base_subvar": "A1"
+                  }
+                },
+                {
+                  "params": {
+                    "base_subvar": "A2"
+                  }
+                }
+              ]
+            },
+            {
+              "params": {
+                "base_var": "B"
+              },
+              "variations": [
+                {
+                  "params": {
+                    "base_subvar": "B1"
+                  }
+                },
+                {
+                  "params": {
+                    "base_subvar": "B2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "child": {
+          "base": "base",
+          "params": {
+            "child_param": "child_value"
+          },
+          "variations": [
+            {
+              "params": {
+                "child_var": "C"
+              },
+              "variations": [
+                {
+                  "params": {
+                    "child_subvar": "C1"
+                  }
+                },
+                {
+                  "params": {
+                    "child_subvar": "C2"
+                  }
+                }
+              ]
+            },
+            {
+              "params": {
+                "child_var": "D"
+              },
+              "variations": [
+                {
+                  "params": {
+                    "child_subvar": "D1"
+                  }
+                },
+                {
+                  "params": {
+                    "child_subvar": "D2"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "deep_variations_bug": {
+    "harness": "collect",
+    "params": {
+      "input": {
+        "child": {
+          "harness": "h",
+          "params": {
+            "child_param": "child_value"
+          },
+          "variations": [
+            {},
+            {
+              "variations": [
+                {
+                  "params": {
+                    "child_param": "O1"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "double_empty_variations": {
+    "harness": "collect",
+    "params": {
+      "input": {
+        "double_empty_variations": {
+          "abstract": true,
+          "harness": "h",
+          "variations": [{}, {}]
+        }
+      }
+    }
+  },
+  "multiple_multiple_overrides": {
+    "harness": "collect",
+    "params": {
+      "input": {
+        "base": {
+          "abstract": true,
+          "harness": "h",
+          "params": {
+            "base_param": "base_value"
+          },
+          "variations": [
+            {},
+            {
+              "variations": [
+                {
+                  "params": {
+                    "base_param": "O1"
+                  }
+                },
+                {
+                  "params": {
+                    "base_param": "O2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "child": {
+          "base": "base",
+          "params": {
+            "child_param": "child_value"
+          },
+          "variations": [
+            {},
+            {
+              "variations": [
+                {
+                  "params": {
+                    "child_param": "O1"
+                  }
+                },
+                {
+                  "params": {
+                    "child_param": "O2_also_override_base_param",
+                    "base_param": "base_override"
+                  }
+                }
+              ]
+            }
+          ]
         }
       }
     }

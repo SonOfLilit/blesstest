@@ -1,0 +1,84 @@
+{
+  "harness": "collect",
+  "params": {
+    "input": {
+      "base": {
+        "abstract": true,
+        "harness": "h",
+        "params": {
+          "base_param": "base_value"
+        },
+        "variations": [
+          {
+            "params": {
+              "base_var": "A"
+            }
+          },
+          {
+            "params": {
+              "base_var": "B"
+            }
+          }
+        ]
+      },
+      "child": {
+        "base": "base",
+        "params": {
+          "child_param": "child_value"
+        },
+        "variations": [
+          {
+            "params": {
+              "child_var": "C"
+            }
+          },
+          {
+            "params": {
+              "child_var": "D"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "result": {
+    "result": {
+      "child__base_var_A__child_var_C": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "child_var": "C"
+        },
+        "harness": "h"
+      },
+      "child__base_var_A__child_var_D": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "child_var": "D"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__child_var_C": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "child_var": "C"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__child_var_D": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "child_var": "D"
+        },
+        "harness": "h"
+      }
+    }
+  }
+}

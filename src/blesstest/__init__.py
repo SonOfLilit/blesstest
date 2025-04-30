@@ -2,6 +2,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import pydantic
 import pyjson5
 from typing import Any, Iterator, cast
 
@@ -72,16 +73,29 @@ class BlessTestItem(pytest.Item):
         )  # Don't catch errors, let them bubble up
 
         test_input = harness.input_type(**cast(dict[str, Any], input_data))
-        actual_output_raw = harness.func(test_input)
-        validated_output = harness.output_type.model_validate(actual_output_raw)
+
+        result = None
+
+        try:
+            actual_output_raw = harness.func(test_input)
+            try:
+                validated_output = harness.output_type.model_validate(actual_output_raw)
+                result = validated_output.model_dump()
+            except pydantic.ValidationError as e:
+                result = {"invalid_output": str(e)}
+        except Exception as e:
+            if os.environ.get("BLESSTEST_DEBUG"):
+                raise
+            result = {"exception": str(e)}
+
         output_dir = self.path.parent / "blessed"
         output_dir.mkdir(parents=True, exist_ok=True)
         output_file_path = output_dir / f"{self.name}.json"
 
         output_file_structure: dict = {
             "harness": self.test_case_info.harness,
-            "params": test_input.dict(),
-            "result": validated_output.dict(),
+            "params": test_input.model_dump(),
+            "result": result,
         }
         json_output = json.dumps(output_file_structure, indent=2) + "\n"
 

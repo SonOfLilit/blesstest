@@ -1,0 +1,41 @@
+{
+  "harness": "collect",
+  "params": {
+    "input": {
+      "child": {
+        "harness": "h",
+        "params": {
+          "child_param": "child_value"
+        },
+        "variations": [
+          {},
+          {
+            "variations": [
+              {
+                "params": {
+                  "child_param": "O1"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "result": {
+    "result": {
+      "child": {
+        "params": {
+          "child_param": "child_value"
+        },
+        "harness": "h"
+      },
+      "child__child_param_O1": {
+        "params": {
+          "child_param": "O1"
+        },
+        "harness": "h"
+      }
+    }
+  }
+}

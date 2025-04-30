@@ -1,0 +1,272 @@
+{
+  "harness": "collect",
+  "params": {
+    "input": {
+      "base": {
+        "abstract": true,
+        "harness": "h",
+        "params": {
+          "base_param": "base_value"
+        },
+        "variations": [
+          {
+            "params": {
+              "base_var": "A"
+            },
+            "variations": [
+              {
+                "params": {
+                  "base_subvar": "A1"
+                }
+              },
+              {
+                "params": {
+                  "base_subvar": "A2"
+                }
+              }
+            ]
+          },
+          {
+            "params": {
+              "base_var": "B"
+            },
+            "variations": [
+              {
+                "params": {
+                  "base_subvar": "B1"
+                }
+              },
+              {
+                "params": {
+                  "base_subvar": "B2"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "child": {
+        "base": "base",
+        "params": {
+          "child_param": "child_value"
+        },
+        "variations": [
+          {
+            "params": {
+              "child_var": "C"
+            },
+            "variations": [
+              {
+                "params": {
+                  "child_subvar": "C1"
+                }
+              },
+              {
+                "params": {
+                  "child_subvar": "C2"
+                }
+              }
+            ]
+          },
+          {
+            "params": {
+              "child_var": "D"
+            },
+            "variations": [
+              {
+                "params": {
+                  "child_subvar": "D1"
+                }
+              },
+              {
+                "params": {
+                  "child_subvar": "D2"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "result": {
+    "result": {
+      "child__base_var_A__base_subvar_A1__child_var_C__child_subvar_C1": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "base_subvar": "A1",
+          "child_var": "C",
+          "child_subvar": "C1"
+        },
+        "harness": "h"
+      },
+      "child__base_var_A__base_subvar_A1__child_var_C__child_subvar_C2": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "base_subvar": "A1",
+          "child_var": "C",
+          "child_subvar": "C2"
+        },
+        "harness": "h"
+      },
+      "child__base_var_A__base_subvar_A1__child_var_D__child_subvar_D1": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "base_subvar": "A1",
+          "child_var": "D",
+          "child_subvar": "D1"
+        },
+        "harness": "h"
+      },
+      "child__base_var_A__base_subvar_A1__child_var_D__child_subvar_D2": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "base_subvar": "A1",
+          "child_var": "D",
+          "child_subvar": "D2"
+        },
+        "harness": "h"
+      },
+      "child__base_var_A__base_subvar_A2__child_var_C__child_subvar_C1": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "base_subvar": "A2",
+          "child_var": "C",
+          "child_subvar": "C1"
+        },
+        "harness": "h"
+      },
+      "child__base_var_A__base_subvar_A2__child_var_C__child_subvar_C2": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "base_subvar": "A2",
+          "child_var": "C",
+          "child_subvar": "C2"
+        },
+        "harness": "h"
+      },
+      "child__base_var_A__base_subvar_A2__child_var_D__child_subvar_D1": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "base_subvar": "A2",
+          "child_var": "D",
+          "child_subvar": "D1"
+        },
+        "harness": "h"
+      },
+      "child__base_var_A__base_subvar_A2__child_var_D__child_subvar_D2": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "A",
+          "base_subvar": "A2",
+          "child_var": "D",
+          "child_subvar": "D2"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__base_subvar_B1__child_var_C__child_subvar_C1": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "base_subvar": "B1",
+          "child_var": "C",
+          "child_subvar": "C1"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__base_subvar_B1__child_var_C__child_subvar_C2": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "base_subvar": "B1",
+          "child_var": "C",
+          "child_subvar": "C2"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__base_subvar_B1__child_var_D__child_subvar_D1": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "base_subvar": "B1",
+          "child_var": "D",
+          "child_subvar": "D1"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__base_subvar_B1__child_var_D__child_subvar_D2": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "base_subvar": "B1",
+          "child_var": "D",
+          "child_subvar": "D2"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__base_subvar_B2__child_var_C__child_subvar_C1": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "base_subvar": "B2",
+          "child_var": "C",
+          "child_subvar": "C1"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__base_subvar_B2__child_var_C__child_subvar_C2": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "base_subvar": "B2",
+          "child_var": "C",
+          "child_subvar": "C2"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__base_subvar_B2__child_var_D__child_subvar_D1": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "base_subvar": "B2",
+          "child_var": "D",
+          "child_subvar": "D1"
+        },
+        "harness": "h"
+      },
+      "child__base_var_B__base_subvar_B2__child_var_D__child_subvar_D2": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var": "B",
+          "base_subvar": "B2",
+          "child_var": "D",
+          "child_subvar": "D2"
+        },
+        "harness": "h"
+      }
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "harness": "collect",
+  "params": {
+    "input": {
+      "base": {
+        "abstract": true,
+        "harness": "h",
+        "params": {
+          "base_param": "base_value"
+        },
+        "variations": [
+          {},
+          {
+            "variations": [
+              {
+                "params": {
+                  "base_param": "O1"
+                }
+              },
+              {
+                "params": {
+                  "base_param": "O2"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "child": {
+        "base": "base",
+        "params": {
+          "child_param": "child_value"
+        },
+        "variations": [
+          {},
+          {
+            "variations": [
+              {
+                "params": {
+                  "child_param": "O1"
+                }
+              },
+              {
+                "params": {
+                  "child_param": "O2_also_override_base_param",
+                  "base_param": "base_override"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "result": {
+    "result": {
+      "child": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "child_value"
+        },
+        "harness": "h"
+      },
+      "child__child_param_O1": {
+        "params": {
+          "base_param": "base_value",
+          "child_param": "O1"
+        },
+        "harness": "h"
+      },
+      "child__base_param_base_override__child___Ez4": {
+        "params": {
+          "base_param": "base_override",
+          "child_param": "O2_also_override_base_param"
+        },
+        "harness": "h"
+      },
+      "child__base_param_O1": {
+        "params": {
+          "base_param": "O1",
+          "child_param": "child_value"
+        },
+        "harness": "h"
+      },
+      "child__base_param_O1__child_param_O1": {
+        "params": {
+          "base_param": "O1",
+          "child_param": "O1"
+        },
+        "harness": "h"
+      },
+      "child__base_param_O1__base_param_base_override__child___Ez4": {
+        "params": {
+          "base_param": "base_override",
+          "child_param": "O2_also_override_base_param"
+        },
+        "harness": "h"
+      },
+      "child__base_param_O2": {
+        "params": {
+          "base_param": "O2",
+          "child_param": "child_value"
+        },
+        "harness": "h"
+      },
+      "child__base_param_O2__child_param_O1": {
+        "params": {
+          "base_param": "O2",
+          "child_param": "O1"
+        },
+        "harness": "h"
+      },
+      "child__base_param_O2__base_param_base_override__child___Ez4": {
+        "params": {
+          "base_param": "base_override",
+          "child_param": "O2_also_override_base_param"
+        },
+        "harness": "h"
+      }
+    }
+  }
+}

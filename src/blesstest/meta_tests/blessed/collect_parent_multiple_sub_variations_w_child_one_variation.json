@@ -4,28 +4,32 @@
     "input": {
       "base_complex": {
         "abstract": true,
-        "harness": "identity",
+        "harness": "h",
+        "params": {
+          "base_param": "base_value"
+        },
         "variations": [
           {
             "params": {
-              "a": 1
+              "base_var_param": "base1"
             }
           },
           {
             "params": {
-              "a": 2
+              "base_var_param": "base2"
             },
             "variations": [
               {
-                "name": "name-21",
+                "name": "varname",
                 "params": {
-                  "a": 21
+                  "base_subvar_param": "subbase1",
+                  "base_var_param": "override"
                 }
               },
               {
-                "harness": "identity_2",
+                "harness": "h2",
                 "params": {
-                  "a": 22
+                  "base_subvar_param": "subbase2"
                 }
               }
             ]
@@ -34,35 +38,39 @@
       },
       "child_complex": {
         "base": "base_complex",
-        "harness": "identity_3",
         "params": {
-          "b": 2
+          "child_param": "child_value"
         }
       }
     }
   },
   "result": {
     "result": {
-      "child_complex__a_1": {
+      "child_complex__base_var_param_base1": {
         "params": {
-          "b": 2,
-          "a": 1
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var_param": "base1"
         },
-        "harness": "identity_3"
+        "harness": "h"
       },
-      "child_complex__a_2__name-21": {
+      "child_complex__base_var_param_base2__varname": {
         "params": {
-          "b": 2,
-          "a": 21
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var_param": "override",
+          "base_subvar_param": "subbase1"
         },
-        "harness": "identity_3"
+        "harness": "h"
       },
-      "child_complex__a_2__identity_2__a_22": {
+      "child_complex__base_var_param_base2__h2__base_subvar_param_subbase2": {
         "params": {
-          "b": 2,
-          "a": 22
+          "base_param": "base_value",
+          "child_param": "child_value",
+          "base_var_param": "base2",
+          "base_subvar_param": "subbase2"
         },
-        "harness": "identity_2"
+        "harness": "h2"
       }
     }
   }
