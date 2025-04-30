@@ -12,5 +12,49 @@
         }
       }
     }
+  },
+  "parent_multiple_sub_variations_w_child_one_variation": {
+    "harness": "collect",
+    "params": {
+      "input": {
+        "base_complex": {
+          "abstract": true,
+          "harness": "identity",
+          "variations": [
+            {
+              "params": {
+                "a": 1
+              }
+            },
+            {
+              "params": {
+                "a": 2
+              },
+              "variations": [
+                {
+                  "name": "name-21",
+                  "params": {
+                    "a": 21
+                  }
+                },
+                {
+                  "harness": "identity_2",
+                  "params": {
+                    "a": 22
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "child_complex": {
+          "base": "base_complex",
+          "harness": "identity_3",
+          "params": {
+            "b": 2
+          }
+        }
+      }
+    }
   }
 }
