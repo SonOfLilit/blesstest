@@ -133,6 +133,22 @@
         }
       }
     ]
+  },
+  "param_variations": {
+    "harness": "identity",
+    "params": {
+      "[a]": [1, 2],
+      "b": 3
+    }
+  },
+  "2_param_variations": {
+    "harness": "identity",
+    "params": {
+      "[[a, b]]": [
+        [1, 2],
+        [3, 4]
+      ]
+    }
   }
   // "base_complex": {
   //   "abstract": true,

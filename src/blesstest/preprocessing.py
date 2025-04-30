@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import re
 from typing import Any, Dict, List, NewType, Optional, Set
 
 from pydantic import BaseModel, Field, RootModel
@@ -252,6 +253,71 @@ def ensure_string(input: Any) -> str:
     return input
 
 
+def _expand_parameter_variations(
+    cases: Dict[CaseName, ResolvableBaseCaseInfo],
+) -> Dict[CaseName, ResolvableBaseCaseInfo]:
+    """Expands parameter variations like '[a]' and '[[a,b]]'."""
+    expanded_cases: Dict[CaseName, ResolvableBaseCaseInfo] = {}
+    for name, case_info in cases.items():
+        new_variations: List[CaseInfo] = []
+        params_to_remove: List[str] = []
+
+        for param_key, param_value in list(case_info.params.items()):
+            # Handle '[a]' syntax
+            single_match = re.fullmatch(r"\[(\w+)\]", param_key)
+            if single_match and isinstance(param_value, list):
+                params_to_remove.append(param_key)
+                param_name = single_match.group(1)
+                for value in param_value:
+                    new_variations.append(
+                        CaseInfo(params={ParamName(param_name): value})
+                    )
+
+            # Handle '[[a, b]]' syntax
+            multi_match = re.fullmatch(r"\[\[(\w+(?:,\s*\w+)*)\]\]", param_key)
+            if multi_match and isinstance(param_value, list):
+                params_to_remove.append(param_key)
+                param_names = [
+                    ParamName(p.strip()) for p in multi_match.group(1).split(",")
+                ]
+                for value_tuple in param_value:
+                    if not isinstance(value_tuple, list) or len(value_tuple) != len(
+                        param_names
+                    ):
+                        raise ValueError(
+                            f"Invalid value format for '{param_key}' in case '{name}'. "
+                            f"Expected list of lists with length {len(param_names)}, got {value_tuple}"
+                        )
+                    variation_params = dict(zip(param_names, value_tuple))
+                    new_variations.append(CaseInfo(params=variation_params))
+
+        if new_variations:
+            # Remove the variation-generating keys from original params
+            for key in params_to_remove:
+                del case_info.params[ParamName(key)]
+
+            # Merge generated variations with existing ones
+            if case_info.variations:
+                # Add new variations as sub-variations to existing ones
+                combined_variations: List[CaseInfo] = []
+                for existing_variation in case_info.variations:
+                    # Check for conflicts before merging - simplified for now
+                    merged_sub_variations = (
+                        existing_variation.variations or []
+                    ) + new_variations
+                    combined_variations.append(
+                        existing_variation.model_copy(
+                            update={"variations": merged_sub_variations}
+                        )
+                    )
+                case_info.variations = combined_variations
+            else:
+                case_info.variations = new_variations
+
+        expanded_cases[name] = case_info
+    return expanded_cases
+
+
 def preprocess_test_cases(
     raw_test_cases: Dict[CaseName, Dict[str, Any]],
 ) -> PreprocessedTestCasesFile:
@@ -260,7 +326,10 @@ def preprocess_test_cases(
         name: ResolvableBaseCaseInfo(**data) for name, data in raw_test_cases.items()
     }
 
-    resolved_bases = resolve_bases(parsed_cases)
+    # Expand parameter variations first
+    cases_with_param_variations_expanded = _expand_parameter_variations(parsed_cases)
+
+    resolved_bases = resolve_bases(cases_with_param_variations_expanded)
 
     expanded_cases = resolve_variations(resolved_bases)
     concrete_cases: dict[CaseName, PreprocessedCaseInfo] = {

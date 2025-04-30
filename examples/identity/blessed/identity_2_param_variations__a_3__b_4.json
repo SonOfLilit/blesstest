@@ -1,0 +1,11 @@
+{
+  "harness": "identity",
+  "params": {
+    "a": 3,
+    "b": 4
+  },
+  "result": {
+    "a": 3,
+    "b": 4
+  }
+}
