@@ -31,7 +31,9 @@ def pytest_collect_file(
     return None
 
 
-def process_file(raw_content: dict) -> PreprocessedTestCasesFile:
+def process_file(
+    raw_content: dict,
+) -> PreprocessedTestCasesFile:
     processed_test_cases = preprocess_test_cases(raw_content)
     validated_data = PreprocessedTestCasesFile.model_validate(processed_test_cases)
     return validated_data
@@ -92,7 +94,7 @@ class BlessTestItem(pytest.Item):
         output_dir.mkdir(parents=True, exist_ok=True)
         output_file_path = output_dir / f"{self.name}.json"
 
-        output_file_structure: dict = {
+        output_file_structure: dict[str, Any] = {
             "harness": self.test_case_info.harness,
             "params": test_input.model_dump(),
             "result": result,

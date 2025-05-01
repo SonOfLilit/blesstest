@@ -32,7 +32,7 @@ class PreprocessedCaseInfo(BaseModel):
     harness: str
 
 
-class PreprocessedTestCasesFile(RootModel):
+class PreprocessedTestCasesFile(RootModel[dict[CaseName, PreprocessedCaseInfo]]):
     root: dict[CaseName, PreprocessedCaseInfo]
 
 
