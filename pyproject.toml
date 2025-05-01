@@ -11,6 +11,7 @@ dependencies = [
     "pydantic>=2.11.3",
     "pyjson5>=1.6.8",
     "pytest>=8.3.5",
+    "visidata>=3.1.1",
 ]
 
 [project.scripts]
