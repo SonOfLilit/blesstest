@@ -114,26 +114,3 @@ index 0000000..9737e6e
 +  "b": 5,
 +  "harness_name": "identity_3"
 +}
-diff --git a/examples/identity/identity.blesstest.json b/examples/identity/identity.blesstest.json
-index 7a37a39..1ad8f87 100644
---- a/examples/identity/identity.blesstest.json
-+++ b/examples/identity/identity.blesstest.json
-@@ -60,5 +60,18 @@
-         }
-       }
-     ]
-+  },
-+  "other_harness": {
-+    "harness": "identity_2",
-+    "base": "happy_path",
-+    "params": {
-+      "b": 5
-+    },
-+    "variations": [
-+      {},
-+      {
-+        "harness": "identity_3"
-+      }
-+    ]
-   }
- }

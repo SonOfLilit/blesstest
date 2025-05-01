@@ -1,0 +1,281 @@
+{
+  "harness": "diff_parser",
+  "params": {
+    "diff_patch_path": "./diff.patch",
+    "context_lines": 1
+  },
+  "result": {
+    "chunks": [
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "is_boring": true
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890.json",
+          "start_line": 2,
+          "end_line": 4,
+          "content": "  \"a\": 1,\n  \"b\": 123456789012345678901234567890\n}\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890.json",
+          "start_line": 2,
+          "end_line": 5,
+          "content": "  \"a\": 1,\n  \"b\": 123456789012345678901234567890,\n  \"harness_name\": \"identity\"\n}\n"
+        },
+        "is_boring": false
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890__vS6.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890__vS6.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "is_boring": true
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890__vS6.json",
+          "start_line": 2,
+          "end_line": 4,
+          "content": "  \"a\": 1,\n  \"b\": 1234567890123456789012345678901\n}\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890__vS6.json",
+          "start_line": 2,
+          "end_line": 5,
+          "content": "  \"a\": 1,\n  \"b\": 1234567890123456789012345678901,\n  \"harness_name\": \"identity\"\n}\n"
+        },
+        "is_boring": false
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_2.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_2.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "is_boring": true
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_2.json",
+          "start_line": 2,
+          "end_line": 4,
+          "content": "  \"a\": 1,\n  \"b\": 2\n}\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_b_variations__b_2.json",
+          "start_line": 2,
+          "end_line": 5,
+          "content": "  \"a\": 1,\n  \"b\": 2,\n  \"harness_name\": \"identity\"\n}\n"
+        },
+        "is_boring": false
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_10.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_10.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "is_boring": true
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_10.json",
+          "start_line": 2,
+          "end_line": 4,
+          "content": "  \"a\": 1,\n  \"b\": 10\n}\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_10.json",
+          "start_line": 2,
+          "end_line": 5,
+          "content": "  \"a\": 1,\n  \"b\": 10,\n  \"harness_name\": \"identity\"\n}\n"
+        },
+        "is_boring": false
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_20.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_20.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "is_boring": true
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_20.json",
+          "start_line": 2,
+          "end_line": 4,
+          "content": "  \"a\": 1,\n  \"b\": 20\n}\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_20.json",
+          "start_line": 2,
+          "end_line": 5,
+          "content": "  \"a\": 1,\n  \"b\": 20,\n  \"harness_name\": \"identity\"\n}\n"
+        },
+        "is_boring": false
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_20__a_3.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_20__a_3.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "is_boring": true
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_20__a_3.json",
+          "start_line": 2,
+          "end_line": 4,
+          "content": "  \"a\": 3,\n  \"b\": 20\n}\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_deep_variations__b_20__a_3.json",
+          "start_line": 2,
+          "end_line": 5,
+          "content": "  \"a\": 3,\n  \"b\": 20,\n  \"harness_name\": \"identity\"\n}\n"
+        },
+        "is_boring": false
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_happy_path.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_happy_path.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "is_boring": true
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_happy_path.json",
+          "start_line": 2,
+          "end_line": 4,
+          "content": "  \"a\": 1,\n  \"b\": 2\n}\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_happy_path.json",
+          "start_line": 2,
+          "end_line": 5,
+          "content": "  \"a\": 1,\n  \"b\": 2,\n  \"harness_name\": \"identity\"\n}\n"
+        },
+        "is_boring": false
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_happy_path_with_big_b.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_happy_path_with_big_b.json",
+          "start_line": 1,
+          "end_line": 1,
+          "content": "{\n"
+        },
+        "is_boring": true
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_happy_path_with_big_b.json",
+          "start_line": 2,
+          "end_line": 4,
+          "content": "  \"a\": 1,\n  \"b\": 2000000000\n}\n"
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_happy_path_with_big_b.json",
+          "start_line": 2,
+          "end_line": 5,
+          "content": "  \"a\": 1,\n  \"b\": 2000000000,\n  \"harness_name\": \"identity\"\n}\n"
+        },
+        "is_boring": false
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_other_harness__0.json",
+          "start_line": null,
+          "end_line": null,
+          "content": ""
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_other_harness__0.json",
+          "start_line": 1,
+          "end_line": 5,
+          "content": "{\n  \"a\": 1,\n  \"b\": 5,\n  \"harness_name\": \"identity_2\"\n}\n"
+        },
+        "is_boring": false
+      },
+      {
+        "before": {
+          "file_path": "examples/identity/blessed/identity_other_harness__1.json",
+          "start_line": null,
+          "end_line": null,
+          "content": ""
+        },
+        "after": {
+          "file_path": "examples/identity/blessed/identity_other_harness__1.json",
+          "start_line": 1,
+          "end_line": 5,
+          "content": "{\n  \"a\": 1,\n  \"b\": 5,\n  \"harness_name\": \"identity_3\"\n}\n"
+        },
+        "is_boring": false
+      }
+    ]
+  }
+}

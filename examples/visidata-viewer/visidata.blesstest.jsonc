@@ -1,0 +1,9 @@
+{
+  "small_diffs": {
+    "harness": "diff_parser",
+    "params": {
+      "diff_patch_path": "./diff.patch",
+      "context_lines": 1
+    }
+  }
+}
