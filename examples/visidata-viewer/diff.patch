@@ -1,0 +1,139 @@
+commit a44bc114449f2ba015cba3a91538110169bd6f84
+Author: Aur Saraf <aur@sarafconsulting.com>
+Date:   Tue Apr 29 13:37:54 2025 +0300
+
+    test variations on harness
+
+diff --git a/examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890.json b/examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890.json
+index 7c7aa5f..d5666d4 100644
+--- a/examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890.json
++++ b/examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890.json
+@@ -1,4 +1,5 @@
+ {
+   "a": 1,
+-  "b": 123456789012345678901234567890
++  "b": 123456789012345678901234567890,
++  "harness_name": "identity"
+ }
+diff --git a/examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890__vS6.json b/examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890__vS6.json
+index 0f1cc75..a4e109b 100644
+--- a/examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890__vS6.json
++++ b/examples/identity/blessed/identity_b_variations__b_123456789012345678901234567890__vS6.json
+@@ -1,4 +1,5 @@
+ {
+   "a": 1,
+-  "b": 1234567890123456789012345678901
++  "b": 1234567890123456789012345678901,
++  "harness_name": "identity"
+ }
+diff --git a/examples/identity/blessed/identity_b_variations__b_2.json b/examples/identity/blessed/identity_b_variations__b_2.json
+index 756b033..6e54baa 100644
+--- a/examples/identity/blessed/identity_b_variations__b_2.json
++++ b/examples/identity/blessed/identity_b_variations__b_2.json
+@@ -1,4 +1,5 @@
+ {
+   "a": 1,
+-  "b": 2
++  "b": 2,
++  "harness_name": "identity"
+ }
+diff --git a/examples/identity/blessed/identity_deep_variations__b_10.json b/examples/identity/blessed/identity_deep_variations__b_10.json
+index d318be4..f0945e1 100644
+--- a/examples/identity/blessed/identity_deep_variations__b_10.json
++++ b/examples/identity/blessed/identity_deep_variations__b_10.json
+@@ -1,4 +1,5 @@
+ {
+   "a": 1,
+-  "b": 10
++  "b": 10,
++  "harness_name": "identity"
+ }
+diff --git a/examples/identity/blessed/identity_deep_variations__b_20.json b/examples/identity/blessed/identity_deep_variations__b_20.json
+index 2b31d7f..2a27542 100644
+--- a/examples/identity/blessed/identity_deep_variations__b_20.json
++++ b/examples/identity/blessed/identity_deep_variations__b_20.json
+@@ -1,4 +1,5 @@
+ {
+   "a": 1,
+-  "b": 20
++  "b": 20,
++  "harness_name": "identity"
+ }
+diff --git a/examples/identity/blessed/identity_deep_variations__b_20__a_3.json b/examples/identity/blessed/identity_deep_variations__b_20__a_3.json
+index de9c9e5..2c37296 100644
+--- a/examples/identity/blessed/identity_deep_variations__b_20__a_3.json
++++ b/examples/identity/blessed/identity_deep_variations__b_20__a_3.json
+@@ -1,4 +1,5 @@
+ {
+   "a": 3,
+-  "b": 20
++  "b": 20,
++  "harness_name": "identity"
+ }
+diff --git a/examples/identity/blessed/identity_happy_path.json b/examples/identity/blessed/identity_happy_path.json
+index 756b033..6e54baa 100644
+--- a/examples/identity/blessed/identity_happy_path.json
++++ b/examples/identity/blessed/identity_happy_path.json
+@@ -1,4 +1,5 @@
+ {
+   "a": 1,
+-  "b": 2
++  "b": 2,
++  "harness_name": "identity"
+ }
+diff --git a/examples/identity/blessed/identity_happy_path_with_big_b.json b/examples/identity/blessed/identity_happy_path_with_big_b.json
+index 3768af1..f6f5fa9 100644
+--- a/examples/identity/blessed/identity_happy_path_with_big_b.json
++++ b/examples/identity/blessed/identity_happy_path_with_big_b.json
+@@ -1,4 +1,5 @@
+ {
+   "a": 1,
+-  "b": 2000000000
++  "b": 2000000000,
++  "harness_name": "identity"
+ }
+diff --git a/examples/identity/blessed/identity_other_harness__0.json b/examples/identity/blessed/identity_other_harness__0.json
+new file mode 100644
+index 0000000..a530104
+--- /dev/null
++++ b/examples/identity/blessed/identity_other_harness__0.json
+@@ -0,0 +1,5 @@
++{
++  "a": 1,
++  "b": 5,
++  "harness_name": "identity_2"
++}
+diff --git a/examples/identity/blessed/identity_other_harness__1.json b/examples/identity/blessed/identity_other_harness__1.json
+new file mode 100644
+index 0000000..9737e6e
+--- /dev/null
++++ b/examples/identity/blessed/identity_other_harness__1.json
+@@ -0,0 +1,5 @@
++{
++  "a": 1,
++  "b": 5,
++  "harness_name": "identity_3"
++}
+diff --git a/examples/identity/identity.blesstest.json b/examples/identity/identity.blesstest.json
+index 7a37a39..1ad8f87 100644
+--- a/examples/identity/identity.blesstest.json
++++ b/examples/identity/identity.blesstest.json
+@@ -60,5 +60,18 @@
+         }
+       }
+     ]
++  },
++  "other_harness": {
++    "harness": "identity_2",
++    "base": "happy_path",
++    "params": {
++      "b": 5
++    },
++    "variations": [
++      {},
++      {
++        "harness": "identity_3"
++      }
++    ]
+   }
+ }
