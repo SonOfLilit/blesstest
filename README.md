@@ -5,14 +5,14 @@
 ## Core Concepts
 
 1. **Harness Function:** A Python function decorated with `@blesstest.harness`. This function takes a Pydantic model instance as input (which defines the scenario to be tested) and returns a Pydantic model instance as output (which defines the assertions to be made). Aim for a single harness that captures most/all complexity in your project with a minimal interface.
-2. **Test Definition Files (`.blesstest.jsonc` or `blesstest.json`):** JSON files that define individual test cases or variations. Each top-level key in the JSON represents a test case.
+2. **Test Definition Files (`*.blesstest.jsonc` or `*.blesstest.json`):** JSON files that define individual test cases or variations. Each top-level key in the JSON represents a test case.
 
 ## How to Use
 
 1. **Install:**
 
    ```bash
-   pip install blesstest
+   pip install git+https://github.com/SonOfLilit/blesstest@main
    ```
 
 2. **Define the Function to Test:**
@@ -111,8 +111,7 @@
    ```
 
 7. **Bless Test Results:**
-   After manually examining `blessed/add_simple.json`, run:
-   Execute `pytest` from your project's root directory.
+   After manually examining `blessed/add_simple.json`, add it to git:
 
    ```bash
    $ git status blessed/
