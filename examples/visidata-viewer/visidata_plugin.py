@@ -6,6 +6,7 @@ from visidata import Sheet, ItemColumn, vd  # type: ignore # mypy can't find the
 from pathlib import Path
 from diff import parse_patch
 from typing import Generator
+import difflib
 
 
 def do() -> None:
@@ -21,10 +22,10 @@ def do() -> None:
         columns = [
             ItemColumn("file", 0),
             ItemColumn("chunk_index", 1),
-            ItemColumn("before_line", 2),
-            ItemColumn("before_content", 3),
-            ItemColumn("after_line", 4),
-            ItemColumn("after_content", 5),
+            ItemColumn("before_line"),
+            ItemColumn("before_content", 3, displayer="full"),
+            ItemColumn("after_line"),
+            ItemColumn("after_content", 5, displayer="full"),
         ]
 
         def iterload(
@@ -38,17 +39,36 @@ def do() -> None:
                         fillvalue="",
                     )
                 ):
+                    # Use difflib to get the differences
+                    matcher = difflib.SequenceMatcher(None, before_line, after_line)
+                    before_colored = []
+                    after_colored = []
+
+                    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+                        if tag == "equal":
+                            before_colored.append(before_line[i1:i2])
+                            after_colored.append(after_line[j1:j2])
+                        elif tag == "replace":
+                            before_colored.append(f"[:red]{before_line[i1:i2]}[/]")
+                            after_colored.append(f"[:green]{after_line[j1:j2]}[/]")
+                        elif tag == "delete":
+                            before_colored.append(f"[:red]{before_line[i1:i2]}[/]")
+                            after_colored.append("[:green] [/]")
+                        elif tag == "insert":
+                            before_colored.append("[:red] [/]")
+                            after_colored.append(f"[:green]{after_line[j1:j2]}[/]")
+
                     yield (
                         row.after.file_path,
                         i,
                         row.before.start_line + j
                         if row.before.start_line is not None and before_line
                         else None,
-                        before_line,
+                        "".join(before_colored),
                         row.after.start_line + j
                         if row.after.start_line is not None and after_line
                         else None,
-                        after_line,
+                        "".join(after_colored),
                     )
 
     vd.push(SimpleSheet())
