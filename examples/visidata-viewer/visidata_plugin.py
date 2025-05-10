@@ -1,5 +1,5 @@
 # Run with:
-# uv run vd --config examples/visidata-viewer/visidata_plugin.py
+# uv run examples/visidata-viewer/visidata_plugin.py
 
 from visidata import Sheet, ItemColumn, vd  # type: ignore # mypy can't find the types here
 from pathlib import Path
