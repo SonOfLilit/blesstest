@@ -2,7 +2,7 @@
 # uv run examples/visidata-viewer/visidata_plugin.py
 
 from itertools import zip_longest
-from visidata import Sheet, ItemColumn, vd  # type: ignore # mypy can't find the types here
+from visidata import Sheet, ItemColumn, vd, DisplayWrapper, iterchunks  # type: ignore # mypy can't find the types here
 from pathlib import Path
 from diff import parse_patch
 from typing import Generator
@@ -18,9 +18,30 @@ def do() -> None:
         context_lines=1,
     )
 
+    class FileColumn(ItemColumn):  # type: ignore
+        def display(
+            self, dw: DisplayWrapper, width: int | None = None
+        ) -> Generator[tuple[list, str], None, None]:
+            """Shorten a path by replacing each directory with its first letter + ellipsis."""
+            text = dw.text
+            if width and len(text) > width:
+                parts = Path(dw.text).parts
+
+                # Process all parts except the last one (filename)
+                shortened_dirs = [f"{p[0]}…" for p in parts[:-1]]
+
+                # Get filename without extension
+                filename = Path(parts[-1]).stem
+
+                # Join everything with slashes
+
+                text = "/".join(shortened_dirs + [filename])
+
+            yield from iterchunks(text)
+
     class SimpleSheet(Sheet):  # type: ignore # can't find the base Sheet type, mypy complcains, but doesn't run without inheriting from it
         columns = [
-            ItemColumn("file", 0),
+            FileColumn("file", 0),
             ItemColumn("chunk_index", 1),
             ItemColumn("before_line"),
             ItemColumn("before_content", 3, displayer="full"),
