@@ -2,8 +2,6 @@
 
 A gold (snapshot) testing framework for Python based on pytest.
 
-TL;DR: Define scenarios that exercise your logic, run them with blessed, then look at the outputs and "bless" them. Next time the tests run, if the result differs from blessed output, it will fail and you will need to re-bless it.
-
 ## Installation
 
 ```bash
@@ -21,9 +19,10 @@ def sum(a: int, b: int) -> int:
 
 ### Define the harness
 
-In `conftest.py`:
+This tells blesstest about the input and output types of `sum`, and lets tests refer to it as `sum_harness`.
 
 ```python
+# conftest.py
 from blesstest import harness, pytest_collect_file # noqa
 
 import pydantic
@@ -44,9 +43,10 @@ def sum_harness(test_input: SumInput) -> SumOutput:
 
 ### Create a test definition file
 
-e.g., `tests/test_sumition.blesstest.jsonc`:
+We only define the inputs of each test case
 
 ```jsonc
+// tests/test_sum.blesstest.jsonc
 {
   "sum_simple": {
     // This will test the case `sum(a=1, b=2)`
@@ -101,6 +101,8 @@ pytest
 
 #### Check what files changed
 
+Each file contains the result of one test case.
+
 ```bash
 $ git status blessed/
 [..]
@@ -113,13 +115,13 @@ Untracked files:
         blessed/with_variations__b_2.json
 ```
 
-#### Do the changes look good?
+#### Check if the file looks good
 
 ```bash
 $ cat blessed/sum_simple.json
 ```
 
-```
+```json
 {
   "harness": "my_harness",
   "params": {
@@ -141,3 +143,13 @@ $ git add blessed/sum_simple.json
 Congrats, you've blessed your first test!
 
 Now `pytest` will show you that the test passed. If the results will ever differ from those snapshots, the tests will fail again.
+
+## Some nice things we get
+
+### Adding tests is easy
+
+To add a new test case, we only need the INPUT parameters for it. We don't need to consider what exactly to assert or what the output would be. We can even use it to check the output of a new feature we added, view the output as a file, and if it looks good - commit it and we have a test.
+
+### Changes that affect many tests are less painful
+
+Imagine we'd update `sum` to return a float instead of an int. Instead of editing lots of asserts, blesstest will show us everything that changed (e.g `2` becomes `2.0`) as a git diff, ready to be committed (blessed) if it looks good.
